@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>点击事件遮挡测试</title>
+  <style>
+    body { background: #0a0a1a; color: #fff; font-family: sans-serif; padding: 40px; }
+    .test-section { margin: 30px 0; padding: 20px; background: rgba(50,50,80,0.3); border-radius: 10px; }
+    button { 
+      padding: 15px 30px; 
+      background: linear-gradient(135deg, #4a90d9, #357abd);
+      border: none; border-radius: 50px; 
+      color: #fff; font-size: 1.2rem; 
+      cursor: pointer;
+      position: relative;
+      z-index: 10;
+    }
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .overlay.transparent {
+      background: transparent;
+      opacity: 0;
+    }
+    .overlay.no-events {
+      pointer-events: none;
+    }
+    .result { margin: 10px; padding: 10px; border-radius: 5px; }
+    .result.success { background: rgba(77,255,136,0.2); color: #4dff88; }
+    .result.fail { background: rgba(255,77,77,0.2); color: #ff4d4d; }
+    .result.info { background: rgba(100,180,255,0.2); color: #64b4ff; }
+    #summary { 
+      position: fixed; bottom: 20px; right: 20px; 
+      padding: 20px; background: rgba(0,0,0,0.8); 
+      border-radius: 10px; max-width: 300px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 点击事件遮挡测试</h1>
+  <p>测试全屏元素是否正确处理 pointer-events，确保按钮可点击</p>
+  
+  <!-- 测试1: 透明但有pointer-events的覆盖层 -->
+  <div class="test-section">
+    <h2>测试1: 透明覆盖层（有pointer-events）</h2>
+    <p>预期结果：❌ 按钮无法点击（被遮挡）</p>
+    <button id="test1-btn">点击测试1</button>
+    <div class="overlay transparent" id="test1-overlay"></div>
+    <div class="result" id="test1-result">等待测试...</div>
+  </div>
+  
+  <!-- 测试2: 透明但无pointer-events的覆盖层 -->
+  <div class="test-section">
+    <h2>测试2: 透明覆盖层（无pointer-events）</h2>
+    <p>预期结果：✅ 按钮可以点击</p>
+    <button id="test2-btn">点击测试2</button>
+    <div class="overlay transparent no-events" id="test2-overlay"></div>
+    <div class="result" id="test2-result">等待测试...</div>
+  </div>
+  
+  <!-- 测试3: 游戏场景模拟 -->
+  <div class="test-section">
+    <h2>测试3: 游戏场景模拟</h2>
+    <p>模拟 ending-screen 遮挡开始按钮的场景</p>
+    <div style="position: relative;">
+      <button id="game-start-btn">🚀 开始游戏</button>
+      <div class="ending-screen" id="game-overlay"></div>
+    </div>
+    <div class="result" id="test3-result">等待测试...</div>
+    <button onclick="toggleOverlay()">切换覆盖层状态</button>
+  </div>
+  
+  <!-- 测试4: 内联onclick测试 -->
+  <div class="test-section">
+    <h2>测试4: 内联onclick</h2>
+    <p>测试内联 onclick 属性是否正常工作</p>
+    <button onclick="test4Click()">内联点击测试</button>
+    <div class="result" id="test4-result">等待测试...</div>
+  </div>
+  
+  <div id="summary">
+    <h3>测试总结</h3>
+    <div id="summary-content"></div>
+  </div>
+
+  <script>
+    let testResults = {};
+    
+    // 测试1: 有pointer-events的透明覆盖层
+    document.getElementById('test1-btn').addEventListener('click', () => {
+      testResults.test1 = false;
+      document.getElementById('test1-result').className = 'result fail';
+      document.getElementById('test1-result').textContent = '❌ 意外：按钮被点击了（应该被遮挡）';
+      updateSummary();
+    });
+    
+    // 测试2: 无pointer-events的透明覆盖层
+    document.getElementById('test2-btn').addEventListener('click', () => {
+      testResults.test2 = true;
+      document.getElementById('test2-result').className = 'result success';
+      document.getElementById('test2-result').textContent = '✅ 通过：按钮可以点击';
+      updateSummary();
+    });
+    
+    // 测试3: 游戏场景模拟
+    document.getElementById('game-start-btn').addEventListener('click', () => {
+      testResults.test3 = true;
+      document.getElementById('test3-result').className = 'result success';
+      document.getElementById('test3-result').textContent = '✅ 通过：开始按钮可以点击';
+      updateSummary();
+    });
+    
+    // 测试4: 内联onclick
+    function test4Click() {
+      testResults.test4 = true;
+      document.getElementById('test4-result').className = 'result success';
+      document.getElementById('test4-result').textContent = '✅ 通过：内联onclick正常工作';
+      updateSummary();
+    }
+    
+    // 切换覆盖层状态
+    function toggleOverlay() {
+      const overlay = document.getElementById('game-overlay');
+      overlay.classList.toggle('active');
+      if (overlay.classList.contains('active')) {
+        document.getElementById('test3-result').className = 'result info';
+        document.getElementById('test3-result').textContent = '💡 覆盖层已激活，按钮应该被遮挡';
+      } else {
+        document.getElementById('test3-result').className = 'result info';
+        document.getElementById('test3-result').textContent = '💡 覆盖层已关闭，按钮应该可以点击';
+      }
+    }
+    
+    // 更新总结
+    function updateSummary() {
+      const total = Object.keys(testResults).length;
+      const passed = Object.values(testResults).filter(v => v).length;
+      document.getElementById('summary-content').innerHTML = 
+        `<p>已测试: ${total} / 4</p>
+         <p>通过: ${passed} / ${total}</p>
+         <p>${passed === 4 ? '🎉 全部通过！' : '继续测试...'}</p>`;
+    }
+    
+    // 添加CSS样式模拟游戏场景
+    const style = document.createElement('style');
+    style.textContent = `
+      .ending-screen {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: linear-gradient(135deg, #0a0a20 0%, #1a1a40 50%, #0a0a20 100%);
+        z-index: 10001;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s;
+      }
+      .ending-screen.active {
+        opacity: 0.8;
+        pointer-events: auto;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    console.log('测试脚本已加载');
+    updateSummary();
+  </script>
+</body>
+</html>

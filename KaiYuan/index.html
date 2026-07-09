@@ -1,0 +1,4948 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>星际拓荒者：奥德赛计划</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    }
+    #start-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0a0a1a 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      overflow: hidden;
+    }
+    #start-screen::before {
+      content: '';
+      position: absolute;
+      width: 300%;
+      height: 300%;
+      background: radial-gradient(circle at 50% 50%, rgba(100, 150, 255, 0.03) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.2); opacity: 0.8; }
+    }
+    #stars-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .star {
+      position: absolute;
+      background: #fff;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+      animation: floatStar 4s ease-in-out infinite;
+    }
+    @keyframes floatStar {
+      0%, 100% {
+        transform: translate(0, 0);
+        opacity: 0.3;
+      }
+      25% {
+        transform: translate(5px, -5px);
+        opacity: 0.8;
+      }
+      50% {
+        transform: translate(-3px, 8px);
+        opacity: 0.5;
+      }
+      75% {
+        transform: translate(8px, 3px);
+        opacity: 0.7;
+      }
+    }
+    #start-screen h1 {
+      font-size: 5rem;
+      font-family: 'KaiTi', 'STKaiti', '楷体', serif;
+      font-weight: bold;
+      letter-spacing: 8px;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 30px rgba(100, 180, 255, 0.5), 0 2px 10px rgba(0,0,0,0.5);
+      position: relative;
+      z-index: 10;
+    }
+    #start-screen .subtitle {
+      font-size: 1.2rem;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 3rem;
+      position: relative;
+      z-index: 10;
+    }
+    #start-screen .rocket-icon {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+      animation: bounce 2s ease-in-out infinite;
+      position: relative;
+      z-index: 10;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    #start-btn {
+      padding: 16px 48px;
+      font-size: 1.4rem;
+      font-family: 'KaiTi', 'STKaiti', '楷体', serif;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: #fff;
+      background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(74, 144, 217, 0.4), 0 0 40px rgba(74, 144, 217, 0.2);
+      position: relative;
+      z-index: 10;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    #start-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 30px rgba(74, 144, 217, 0.6), 0 0 60px rgba(74, 144, 217, 0.3);
+      background: linear-gradient(135deg, #5a9fe9 0%, #4589cd 100%);
+    }
+    #start-btn:active {
+      transform: translateY(0);
+    }
+    #tips-btn {
+      padding: 16px 48px;
+      font-size: 1.4rem;
+      font-family: 'KaiTi', 'STKaiti', '楷体', serif;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: #fff;
+      background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(74, 144, 217, 0.4), 0 0 40px rgba(74, 144, 217, 0.2);
+      position: relative;
+      z-index: 10;
+      overflow: hidden;
+    }
+    #tips-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 30px rgba(74, 144, 217, 0.6), 0 0 60px rgba(74, 144, 217, 0.3);
+      background: linear-gradient(135deg, #5a9fe9 0%, #4589cd 100%);
+    }
+    #tips-btn:active {
+      transform: translateY(0);
+    }
+    #start-screen .controls-info {
+      margin-top: 3rem;
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.5);
+      text-align: center;
+      line-height: 2;
+      position: relative;
+      z-index: 1;
+    }
+    #start-screen .controls-info kbd {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 4px;
+      padding: 4px 8px;
+      margin: 0 4px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    canvas {
+      display: block;
+      pointer-events: none;
+    }
+    canvas.game-active {
+      pointer-events: auto;
+    }
+    #hud {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      pointer-events: none;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 320px;
+    }
+    #hud .label {
+      color: #9ecfff;
+      font-weight: 600;
+    }
+    #hud .value {
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+    }
+    #fuel-bar-bg {
+      width: 200px;
+      height: 12px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 6px;
+      margin-top: 6px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+    #fuel-bar {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #ff4d4d, #ffcc00, #4dff88);
+      transform-origin: left;
+      transform: scaleX(1);
+      transition: transform 0.1s linear;
+    }
+    #instructions {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      pointer-events: none;
+      opacity: 0.9;
+      font-size: 13px;
+      color: rgba(255,255,255,0.85);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    }
+    #instructions kbd {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 4px;
+      padding: 2px 6px;
+      margin: 0 2px;
+      font-family: monospace;
+      font-weight: bold;
+    }
+    #antigravity-btn {
+      position: absolute;
+      right: 16px;
+      bottom: 172px;
+      width: 140px;
+      padding: 10px 0;
+      font-size: 14px;
+      font-weight: bold;
+      color: #fff;
+      background: rgba(0, 150, 255, 0.3);
+      border: 2px solid rgba(0, 180, 255, 0.5);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+      display: none;
+    }
+    #antigravity-btn:hover {
+      background: rgba(0, 150, 255, 0.5);
+      border-color: rgba(0, 200, 255, 0.8);
+      box-shadow: 0 0 15px rgba(0, 180, 255, 0.4);
+    }
+    #antigravity-btn.active {
+      background: rgba(0, 255, 150, 0.4);
+      border-color: rgba(0, 255, 180, 0.8);
+      box-shadow: 0 0 20px rgba(0, 255, 150, 0.5);
+    }
+    #warp-btn {
+      position: absolute;
+      right: 16px;
+      bottom: 222px;
+      width: 140px;
+      padding: 10px 0;
+      font-size: 14px;
+      font-weight: bold;
+      color: #fff;
+      background: rgba(150, 0, 255, 0.3);
+      border: 2px solid rgba(180, 0, 255, 0.5);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+      display: none;
+    }
+    #warp-btn:hover {
+      background: rgba(150, 0, 255, 0.5);
+      border-color: rgba(200, 0, 255, 0.8);
+      box-shadow: 0 0 15px rgba(180, 0, 255, 0.4);
+    }
+    #warp-btn.active {
+      background: rgba(255, 0, 200, 0.4);
+      border-color: rgba(255, 0, 220, 0.8);
+      box-shadow: 0 0 20px rgba(0, 255, 150, 0.5);
+    }
+    #message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 28px;
+      font-weight: bold;
+      text-align: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+    }
+    #settings-btn {
+      position: absolute;
+      bottom: 24px;
+      left: 16px;
+      width: 48px;
+      height: 48px;
+      background: rgba(0, 20, 40, 0.6);
+      border: 1px solid rgba(100, 200, 255, 0.3);
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: rgba(255,255,255,0.8);
+      transition: all 0.3s;
+    }
+    #settings-btn:hover {
+      background: rgba(100, 200, 255, 0.3);
+      border-color: rgba(100, 200, 255, 0.5);
+    }
+    #settings-panel {
+      position: absolute;
+      bottom: 72px;
+      left: 16px;
+      width: 280px;
+      background: rgba(0,0,0,0.85);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      padding: 16px;
+      display: none;
+      backdrop-filter: blur(10px);
+    }
+    #settings-panel h3 {
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: #9ecfff;
+    }
+    .setting-item {
+      margin-bottom: 12px;
+    }
+    .setting-item label {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 4px;
+      color: rgba(255,255,255,0.7);
+    }
+    .setting-item input[type="range"] {
+      width: 100%;
+      height: 6px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 3px;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    .setting-item input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #9ecfff;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .setting-item .value {
+      font-size: 12px;
+      color: #9ecfff;
+      margin-top: 2px;
+    }
+    .setting-item button {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 4px;
+      color: rgba(255,255,255,0.8);
+      padding: 4px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .setting-item button:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .slider-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .slider-container label {
+      font-size: 1em;
+      color: rgba(255,255,255,0.8);
+    }
+    .slider-container input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.1);
+      outline: none;
+      -webkit-appearance: none;
+    }
+    .slider-container input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #64b4ff;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(100, 180, 255, 0.5);
+    }
+    .slider-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85em;
+      color: rgba(255,255,255,0.5);
+    }
+    .rocket-types {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .rocket-type-card {
+      position: relative;
+      background: rgba(0,0,0,0.3);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+    .rocket-type-card:hover {
+      border-color: rgba(100, 180, 255, 0.4);
+      background: rgba(100, 180, 255, 0.05);
+      transform: translateY(-2px);
+    }
+    .rocket-type-card.selected {
+      border-color: #64b4ff;
+      background: rgba(100, 180, 255, 0.1);
+      box-shadow: 0 0 20px rgba(100, 180, 255, 0.2);
+    }
+    .rocket-type-card input[type="radio"] {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: #64b4ff;
+    }
+    .rocket-type-icon {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+    .rocket-type-name {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 5px;
+    }
+    .rocket-type-desc {
+      font-size: 0.9em;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 10px;
+    }
+    .rocket-type-stats {
+      display: flex;
+      gap: 20px;
+      font-size: 0.85em;
+      color: rgba(255,255,255,0.5);
+    }
+    .rocket-type-stats span {
+      background: rgba(0,0,0,0.3);
+      padding: 5px 10px;
+      border-radius: 4px;
+    }
+    .rocket-info {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 15px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+    }
+    .info-label {
+      color: rgba(255,255,255,0.6);
+      font-size: 0.95em;
+    }
+    .info-value {
+      color: #fff;
+      font-weight: bold;
+      font-size: 0.95em;
+    }
+    .info-item.highlight {
+      background: rgba(100, 180, 255, 0.1);
+      border: 1px solid rgba(100, 180, 255, 0.2);
+    }
+    .info-item.highlight .info-value {
+      color: #64b4ff;
+    }
+    .slider-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85em;
+      color: rgba(255,255,255,0.5);
+    }
+    .preview-section {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .preview-card {
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      padding: 15px;
+    }
+    .preview-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .preview-item:last-child {
+      border-bottom: none;
+    }
+    .preview-item .label {
+      color: rgba(255,255,255,0.6);
+    }
+    .preview-item .value {
+      color: #fff;
+      font-weight: bold;
+    }
+    .preview-item.highlight .value {
+      color: #64b4ff;
+      font-size: 1.2em;
+    }
+    .builder-footer {
+      margin-top: 30px;
+    }
+    #start-mission {
+      background: linear-gradient(135deg, #64b4ff 0%, #4a9eff 100%);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1.3em;
+      padding: 15px 60px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(100, 180, 255, 0.4);
+    }
+    #start-mission:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 30px rgba(100, 180, 255, 0.6);
+    }
+
+    #center-screen {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 10000;
+      flex-direction: column;
+    }
+    #center-screen.active {
+      display: flex;
+    }
+    .center-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 30px;
+      background: linear-gradient(180deg, rgba(30,30,50,0.95) 0%, rgba(20,20,40,0.95) 100%);
+      border-bottom: 1px solid rgba(100,180,255,0.2);
+    }
+    .center-header h2 {
+      font-size: 1.8em;
+      color: #fff;
+      margin: 0;
+      text-shadow: 0 0 20px rgba(100, 180, 255, 0.5);
+    }
+    #center-close {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      color: #fff;
+      font-size: 1.2em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    #center-close:hover {
+      background: rgba(255,60,60,0.5);
+      border-color: rgba(255,100,100,0.5);
+    }
+    .center-content {
+      flex: 1;
+      padding: 30px;
+      overflow-y: auto;
+    }
+    .center-panel {
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 25px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .center-panel h3 {
+      font-size: 1.3em;
+      color: #64b4ff;
+      margin-bottom: 15px;
+      border-bottom: 1px solid rgba(100,180,255,0.3);
+      padding-bottom: 10px;
+    }
+    .center-panel p {
+      color: rgba(255,255,255,0.7);
+      line-height: 1.6;
+      margin: 10px 0;
+    }
+    .center-btn {
+      background: linear-gradient(135deg, rgba(100,180,255,0.3) 0%, rgba(74,158,255,0.2) 100%);
+      border: 1px solid rgba(100,180,255,0.4);
+      border-radius: 6px;
+      color: #64b4ff;
+      font-size: 1em;
+      padding: 10px 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+    }
+    .center-btn:hover {
+      background: linear-gradient(135deg, rgba(100,180,255,0.5) 0%, rgba(74,158,255,0.4) 100%);
+      color: #fff;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+    }
+    .stat-item {
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #fff;
+    }
+    .stat-label {
+      font-size: 0.85em;
+      color: rgba(255,255,255,0.5);
+      margin-top: 5px;
+    }
+    #athena-panel {
+    position: fixed;
+    bottom: 340px;
+    right: 16px;
+    width: 320px;
+    background: rgba(0, 20, 40, 0.9);
+    border: 1px solid rgba(100, 200, 255, 0.3);
+    border-radius: 12px;
+    padding: 16px;
+    z-index: 10002;
+    backdrop-filter: blur(10px);
+    display: none;
+    pointer-events: auto;
+  }
+  #athena-panel.active {
+    display: block;
+  }
+  .athena-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(100, 200, 255, 0.2);
+  }
+  .athena-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4a90d9, #00ffff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 0 15px rgba(100, 200, 255, 0.5);
+  }
+  .athena-name {
+    font-size: 14px;
+    font-weight: bold;
+    color: #64b4ff;
+    text-shadow: 0 0 10px rgba(100, 200, 255, 0.5);
+  }
+  .athena-status {
+    font-size: 11px;
+    color: rgba(100, 200, 255, 0.6);
+  }
+  .athena-message {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.6;
+    margin-bottom: 12px;
+    min-height: 40px;
+  }
+  .athena-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .athena-choice {
+    background: rgba(100, 200, 255, 0.1);
+    border: 1px solid rgba(100, 200, 255, 0.3);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+  .athena-choice:hover {
+    background: rgba(100, 200, 255, 0.25);
+    border-color: rgba(100, 200, 255, 0.6);
+  }
+  .athena-choice.selected {
+    background: rgba(100, 200, 255, 0.3);
+    border-color: #64b4ff;
+  }
+  #athena-btn {
+    position: absolute;
+    bottom: 240px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, rgba(74, 144, 217, 0.8), rgba(0, 255, 255, 0.8));
+    border: 2px solid rgba(100, 200, 255, 0.5);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 100;
+    transition: all 0.3s;
+    box-shadow: 0 0 20px rgba(100, 200, 255, 0.4);
+  }
+  #athena-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px rgba(100, 200, 255, 0.6);
+  }
+  #athena-btn.hidden {
+    display: none;
+  }
+  #athena-nav-label {
+    padding: 4px 8px;
+    background: rgba(0, 180, 255, 0.8);
+    border-radius: 6px;
+    font-size: 12px;
+    color: #fff;
+    white-space: nowrap;
+    margin-left: auto;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  #athena-nav-label.visible {
+    opacity: 1;
+  }
+  .signal-indicator {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 12px;
+    height: 12px;
+    background: #ff4d4d;
+    border-radius: 50%;
+    animation: pulse 1s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.5; }
+  }
+  .story-log {
+    position: fixed;
+    top: 200px;
+    left: 16px;
+    width: 280px;
+    max-height: 300px;
+    background: rgba(0, 20, 40, 0.85);
+    border: 1px solid rgba(100, 200, 255, 0.2);
+    border-radius: 8px;
+    padding: 12px;
+    z-index: 98;
+    overflow-y: auto;
+    display: none;
+  }
+  .story-log.active {
+    display: block;
+  }
+  .story-log h3 {
+    font-size: 12px;
+    color: #64b4ff;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(100, 200, 255, 0.2);
+  }
+  .story-log-item {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 6px;
+    padding-left: 12px;
+    position: relative;
+  }
+  .story-log-item::before {
+    content: '>';
+    position: absolute;
+    left: 0;
+    color: #64b4ff;
+  }
+  .story-log-item.new {
+    color: #fff;
+    font-weight: 500;
+  }
+  #story-log-btn {
+    position: fixed;
+    top: 140px;
+    left: 16px;
+    width: 48px;
+    height: 48px;
+    background: rgba(0, 20, 40, 0.6);
+    border: 1px solid rgba(100, 200, 255, 0.3);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.8);
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 100;
+    transition: all 0.3s;
+  }
+  #story-log-btn:hover {
+    background: rgba(100, 200, 255, 0.3);
+    border-color: rgba(100, 200, 255, 0.5);
+  }
+  .ending-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0a0a20 0%, #1a1a40 50%, #0a0a20 100%);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    opacity: 0;
+    transition: opacity 1s;
+    pointer-events: none;
+  }
+  .ending-screen.active {
+    display: flex;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .ending-screen h2 {
+    font-size: 3rem;
+    font-family: 'KaiTi', 'STKaiti', '楷体', serif;
+    color: #64b4ff;
+    text-shadow: 0 0 30px rgba(100, 200, 255, 0.5);
+    margin-bottom: 20px;
+  }
+  .ending-screen p {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    max-width: 600px;
+    line-height: 1.8;
+    margin-bottom: 30px;
+  }
+  .ending-screen .ending-type {
+    font-size: 1.5rem;
+    color: #fff;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  .ending-screen .ending-eval {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+  }
+  #music-btn {
+    position: fixed;
+    bottom: 24px;
+    left: 72px;
+    width: 48px;
+    height: 48px;
+    background: rgba(0, 20, 40, 0.6);
+    border: 1px solid rgba(100, 200, 255, 0.3);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.8);
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 100;
+    transition: all 0.3s;
+  }
+    #music-btn:hover {
+      background: rgba(100, 200, 255, 0.3);
+      border-color: rgba(100, 200, 255, 0.5);
+    }
+    #music-panel {
+      position: fixed;
+      bottom: 72px;
+      left: 16px;
+      width: 240px;
+      background: rgba(0,0,0,0.85);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 12px;
+      padding: 16px;
+      display: none;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    #music-panel h3 {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      color: rgba(255,255,255,0.8);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 8px;
+    }
+    #music-panel .setting-item {
+      margin-bottom: 12px;
+    }
+    #music-panel button {
+      width: 100%;
+      padding: 8px;
+      background: rgba(0,150,255,0.3);
+      border: 1px solid rgba(0,150,255,0.6);
+      border-radius: 6px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+    #music-panel button:hover {
+      background: rgba(0,150,255,0.5);
+    }
+    #music-panel select {
+      width: 100%;
+      padding: 8px;
+      background: rgba(0,150,255,0.2);
+      border: 1px solid rgba(0,150,255,0.5);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    #music-panel select option {
+      background: rgba(0,0,0,0.9);
+      color: #fff;
+    }
+    #music-panel label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.8);
+    }
+  </style>
+</head>
+<body>
+  <div id="start-screen">
+    <canvas id="stars-canvas"></canvas>
+    <div class="rocket-icon">🚀</div>
+    <h1>星际拓荒者：奥德赛计划</h1>
+    <div class="subtitle">INTERSTELLAR ODYSSEY PROJECT</div>
+    <button id="start-btn">星际探索</button>
+    <button id="tips-btn">玩法提示</button>
+  </div>
+
+  <div id="center-screen">
+    <div class="center-header">
+      <h2 id="center-title">控制中心</h2>
+      <button id="center-close">✕</button>
+    </div>
+    <div class="center-content" id="center-content">
+    </div>
+  </div>
+
+  <canvas id="game"></canvas>
+
+  <div id="hud">
+    <div><span class="label">高度：</span><span class="value" id="altitude">0 m</span></div>
+    <div><span class="label">速度：</span><span class="value" id="speed">0 m/s</span></div>
+    <div><span class="label">燃料：</span>
+      <div id="fuel-bar-bg"><div id="fuel-bar"></div></div>
+    </div>
+    <div><span class="label">最近天体：</span><span class="value" id="nearest">地球</span></div>
+    <div><span class="label">已探索：</span><span class="value" id="visited">0</span></div>
+  </div>
+
+  <div id="instructions">
+    <kbd>W</kbd>/<kbd>↑</kbd> 主引擎　<kbd>A</kbd>/<kbd>←</kbd> <kbd>D</kbd>/<kbd>→</kbd> 转向　<kbd>R</kbd> 重置火箭　<kbd>滚轮</kbd> 缩放视图　<kbd>0</kbd> 自动缩放
+  </div>
+
+  <div id="message"></div>
+
+  <button id="antigravity-btn" class="game-btn">反重力模式 OFF</button>
+  <button id="warp-btn" class="game-btn">曲率模式 OFF</button>
+
+  <div id="settings-btn">⚙</div>
+  <div id="settings-panel">
+    <h3>设置</h3>
+    <div class="setting-item">
+      <label>鼠标灵敏度</label>
+      <input type="range" id="sensitivity-slider" min="0.01" max="1.0" step="0.01" value="0.5">
+      <div class="value" id="sensitivity-value">50%</div>
+    </div>
+    <div class="setting-item">
+      <label>时间速度</label>
+      <input type="range" id="time-slider" min="0" max="30" step="0.1" value="1">
+      <div class="value" id="time-value">1 天/秒</div>
+    </div>
+    <div class="setting-item">
+      <button id="reset-settings">重置</button>
+    </div>
+  </div>
+
+  <div id="music-btn">♪</div>
+  <div id="music-panel">
+    <h3>背景音乐</h3>
+    <div class="setting-item">
+      <button id="music-toggle">播放</button>
+    </div>
+    <div class="setting-item">
+      <label>音量</label>
+      <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.1">
+      <div class="value" id="volume-value">10%</div>
+    </div>
+    <div class="setting-item">
+      <button id="voice-toggle">🔊 语音开启</button>
+    </div>
+    <div class="setting-item">
+      <label>雅典娜音色</label>
+      <select id="athena-voice-select">
+        <option value="">自动选择</option>
+      </select>
+      <button id="voice-preview-btn" style="margin-top:8px;">试听</button>
+    </div>
+  </div>
+
+  <audio id="bg-music" loop>
+    <source src="music.mp3.flac" type="audio/flac">
+    <source src="music.mp3" type="audio/mpeg">
+  </audio>
+
+  <div id="athena-btn" class="hidden">
+    🤖
+    <div class="signal-indicator" style="display:none"></div>
+  </div>
+  <div id="athena-panel">
+    <div class="athena-header">
+      <div class="athena-icon">🤖</div>
+      <div>
+        <div class="athena-name">雅典娜 (Athena)</div>
+        <div class="athena-status">AI 导航系统</div>
+      </div>
+      <div id="athena-nav-label">导航至 水星</div>
+    </div>
+    <div class="athena-message" id="athena-message"></div>
+    <div class="athena-choices" id="athena-choices"></div>
+  </div>
+
+  <div id="story-log-btn">📜</div>
+  <div class="story-log" id="story-log">
+    <h3>任务日志</h3>
+    <div id="story-log-content"></div>
+  </div>
+
+  <div class="ending-screen" id="ending-screen">
+    <h2 id="ending-title">结局</h2>
+    <div class="ending-type" id="ending-type"></div>
+    <p id="ending-description"></p>
+    <div class="ending-eval" id="ending-eval"></div>
+  </div>
+
+
+  <script>
+    // ================= 星星背景动画 =================
+    (function() {
+      const container = document.getElementById('start-screen');
+      if (!container) return;
+
+      const starCount = 150;
+      for (let i = 0; i < starCount; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.width = (Math.random() * 3 + 1) + 'px';
+        star.style.height = star.style.width;
+        star.style.animationDelay = Math.random() * 5 + 's';
+        star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        star.style.opacity = Math.random() * 0.5 + 0.3;
+        container.appendChild(star);
+      }
+
+      window.stopStars = function() {};
+    })();
+
+    // ================= 工具函数 =================
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = window.innerWidth + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const PI = Math.PI;
+    const rand = (min, max) => Math.random() * (max - min) + min;
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+    class Vec2 {
+      constructor(x, y) { this.x = x; this.y = y; }
+      add(v) { return new Vec2(this.x + v.x, this.y + v.y); }
+      sub(v) { return new Vec2(this.x - v.x, this.y - v.y); }
+      mul(s) { return new Vec2(this.x * s, this.y * s); }
+      div(s) { return new Vec2(this.x / s, this.y / s); }
+      mag() { return Math.hypot(this.x, this.y); }
+      normalize() {
+        const m = this.mag();
+        return m > 0 ? this.div(m) : new Vec2(0, 0);
+      }
+      dist(v) { return Math.hypot(this.x - v.x, this.y - v.y); }
+      rotate(angle) {
+        const c = Math.cos(angle), s = Math.sin(angle);
+        return new Vec2(this.x * c - this.y * s, this.x * s + this.y * c);
+      }
+    }
+
+    // ================= 输入 =================
+    const keys = {};
+    window.addEventListener('keydown', e => { keys[e.code] = true; });
+    window.addEventListener('keyup', e => { keys[e.code] = false; });
+
+    // 鼠标滚轮缩放
+    let mouseSensitivity = 0.5;
+    window.addEventListener('wheel', e => {
+      e.preventDefault();
+      const zoomSpeed = 1 + mouseSensitivity;
+      if (e.deltaY < 0) {
+        camera.targetManualZoom *= zoomSpeed;
+      } else {
+        camera.targetManualZoom /= zoomSpeed;
+      }
+      camera.targetManualZoom = clamp(camera.targetManualZoom, ZOOM_MIN, ZOOM_MAX);
+    }, { passive: false });
+
+    // ================= 设置面板 =================
+    const settingsBtn = document.getElementById('settings-btn');
+    const settingsPanel = document.getElementById('settings-panel');
+    const sensitivitySlider = document.getElementById('sensitivity-slider');
+    const sensitivityValue = document.getElementById('sensitivity-value');
+    const timeSlider = document.getElementById('time-slider');
+    const timeValue = document.getElementById('time-value');
+    const resetSettingsBtn = document.getElementById('reset-settings');
+
+    let timeSpeed = 1;
+
+    settingsBtn.addEventListener('click', () => {
+      settingsPanel.style.display = settingsPanel.style.display === 'block' ? 'none' : 'block';
+    });
+
+    sensitivitySlider.addEventListener('input', (e) => {
+      mouseSensitivity = parseFloat(e.target.value);
+      sensitivityValue.textContent = Math.round(mouseSensitivity * 100) + '%';
+    });
+
+    timeSlider.addEventListener('input', (e) => {
+      timeSpeed = parseFloat(e.target.value);
+      const daysPerSec = GAME_DAYS_PER_SECOND * timeSpeed;
+      timeValue.textContent = (daysPerSec >= 1 ? Math.round(daysPerSec) : daysPerSec.toFixed(1)) + ' 天/秒';
+    });
+
+    resetSettingsBtn.addEventListener('click', () => {
+      mouseSensitivity = 0.5;
+      timeSpeed = 1;
+      sensitivitySlider.value = 0.5;
+      sensitivityValue.textContent = '50%';
+      timeSlider.value = 1;
+      timeValue.textContent = GAME_DAYS_PER_SECOND.toFixed(1) + ' 天/秒';
+    });
+
+    // 点击其他地方关闭设置面板
+    document.addEventListener('click', (e) => {
+      if (!settingsBtn.contains(e.target) && !settingsPanel.contains(e.target)) {
+        settingsPanel.style.display = 'none';
+      }
+    });
+
+    // ================= 世界参数 =================
+    const SCALE = 1;
+    const G = 0.0015;
+    const EARTH_RADIUS = 6371;
+    const EARTH_MASS = 350000000;
+    const ROCKET_HEIGHT = 0.1;
+    const ROCKET_WIDTH = 0.0101;
+    let MAX_FUEL = 200;
+    let FUEL_BURN = 0.003;
+    let THRUST_FORCE = 0.0132;
+    const ROCKET_VISUAL_SCALE = 1; // 视觉放大倍数：当前为真实比例，火箭默认视图下几乎不可见
+    const ROCKET_HALF_HEIGHT = ROCKET_HEIGHT * ROCKET_VISUAL_SCALE / 2; // 碰撞与停靠用的视觉半高
+    const ROCKET_HALF_WIDTH = ROCKET_WIDTH * ROCKET_VISUAL_SCALE / 2; // 视觉半宽
+    const ROTATION_SPEED = 0.006;
+    const ZOOM_MIN = 0.00000005;
+    const ZOOM_MAX = 100000;
+
+    const LAUNCH_PAD_ANGLE = -PI / 2; // 地球正上方
+
+    function getPlanetVelocity(planet) {
+      if (planet.vel) return planet.vel;
+      if (planet.orbitPeriod > 0 && planet.orbitCenter) {
+        const angularSpeed = (PI * 2 / planet.orbitPeriod) * timeSpeed;
+        return new Vec2(
+          -Math.sin(planet.orbitAngle) * planet.orbitRadius * angularSpeed,
+          Math.cos(planet.orbitAngle) * planet.orbitRadius * angularSpeed
+        );
+      }
+      return new Vec2(0, 0);
+    }
+
+    // ================= 实体 =================
+    class Planet {
+      constructor(x, y, radius, color, name, mass, landColor = null, orbitRadius = 0, orbitPeriod = 0, orbitAngle = 0, orbitCenter = null) {
+        this.radius = radius;
+        this.color = color;
+        this.name = name;
+        this.mass = mass;
+        this.visited = false;
+        this.atmosphere = radius * 1.35;
+        this.landColor = landColor;
+        this.rings = null;
+        this.land = [];
+        // 地形细节
+        this.spots = [];
+        for (let i = 0; i < 6; i++) {
+          this.spots.push({
+            angle: rand(0, PI * 2),
+            dist: rand(0.3, 0.8),
+            size: rand(0.08, 0.18),
+            color: 'rgba(0,0,0,0.15)'
+          });
+        }
+        // 公转轨道参数
+        this.orbitRadius = orbitRadius;
+        this.orbitPeriod = orbitPeriod;
+        this.orbitAngle = orbitAngle;
+        this.orbitCenter = orbitCenter;
+        // 根据轨道参数自动计算初始位置和速度
+        if (orbitPeriod > 0 && orbitCenter) {
+          const px = orbitCenter.pos.x + Math.cos(orbitAngle) * orbitRadius;
+          const py = orbitCenter.pos.y + Math.sin(orbitAngle) * orbitRadius;
+          this.pos = new Vec2(px, py);
+          const angularSpeed = (PI * 2 / orbitPeriod);
+          this.vel = new Vec2(
+            -Math.sin(orbitAngle) * orbitRadius * angularSpeed,
+            Math.cos(orbitAngle) * orbitRadius * angularSpeed
+          );
+        } else {
+          this.pos = new Vec2(x, y);
+          this.vel = new Vec2(0, 0);
+        }
+      }
+
+      updateOrbit(speedMultiplier = 1) {
+        if (this.orbitPeriod > 0 && this.orbitCenter) {
+          const angularSpeed = (PI * 2 / this.orbitPeriod) * speedMultiplier;
+          this.orbitAngle += angularSpeed;
+          const px = this.orbitCenter.pos.x + Math.cos(this.orbitAngle) * this.orbitRadius;
+          const py = this.orbitCenter.pos.y + Math.sin(this.orbitAngle) * this.orbitRadius;
+          this.pos = new Vec2(px, py);
+          this.vel = new Vec2(
+            -Math.sin(this.orbitAngle) * this.orbitRadius * angularSpeed,
+            Math.cos(this.orbitAngle) * this.orbitRadius * angularSpeed
+          );
+        }
+      }
+
+      addLand(x, y, rx, ry, rotation = 0, color = null) {
+        this.land.push({ x, y, rx, ry, rotation, color });
+      }
+
+      setRings(innerRadius, outerRadius, color) {
+        this.rings = { inner: innerRadius, outer: outerRadius, color };
+      }
+
+      draw(ctx, camera) {
+        const screenPos = camera.worldToScreen(this.pos);
+        const r = this.radius * camera.zoom;
+
+        if (this.name === '地球' && r > 3) {
+          this.drawEarth(ctx, screenPos, r, camera);
+          return;
+        }
+
+        const drawR = Math.max(0.5, r);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(screenPos.x, screenPos.y, drawR, 0, PI * 2);
+        ctx.clip();
+
+        const lightX = screenPos.x - drawR * 0.3;
+        const lightY = screenPos.y - drawR * 0.3;
+
+        const mainGrad = ctx.createRadialGradient(
+          lightX, lightY, 0,
+          screenPos.x, screenPos.y, drawR
+        );
+        mainGrad.addColorStop(0, lighten(this.color, 70));
+        mainGrad.addColorStop(0.2, lighten(this.color, 40));
+        mainGrad.addColorStop(0.5, this.color);
+        mainGrad.addColorStop(0.8, darken(this.color, 40));
+        mainGrad.addColorStop(1, darken(this.color, 70));
+        ctx.fillStyle = mainGrad;
+        ctx.fill();
+
+        ctx.restore();
+
+        if (r < 1) return;
+
+        // 3D高光
+        const highlightGrad = ctx.createRadialGradient(
+          screenPos.x - drawR * 0.25, screenPos.y - drawR * 0.25, 0,
+          screenPos.x - drawR * 0.25, screenPos.y - drawR * 0.25, drawR * 0.15
+        );
+        highlightGrad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+        highlightGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)');
+        highlightGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = highlightGrad;
+        ctx.beginPath();
+        ctx.arc(screenPos.x, screenPos.y, drawR, 0, PI * 2);
+        ctx.fill();
+
+        // 大气层
+        const atm = this.atmosphere * camera.zoom;
+        const gradAtm = ctx.createRadialGradient(screenPos.x, screenPos.y, r, screenPos.x, screenPos.y, atm);
+        gradAtm.addColorStop(0, this.color.replace(')', ', 0.35)').replace('rgb', 'rgba'));
+        gradAtm.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = gradAtm;
+        ctx.beginPath();
+        ctx.arc(screenPos.x, screenPos.y, atm, 0, PI * 2);
+        ctx.fill();
+
+        if (this.name === '太阳') {
+          const glow = ctx.createRadialGradient(screenPos.x, screenPos.y, r, screenPos.x, screenPos.y, r * 4);
+          glow.addColorStop(0, 'rgba(255, 240, 200, 0.7)');
+          glow.addColorStop(0.4, 'rgba(255, 180, 80, 0.3)');
+          glow.addColorStop(1, 'rgba(255, 100, 0, 0)');
+          ctx.fillStyle = glow;
+          ctx.beginPath();
+          ctx.arc(screenPos.x, screenPos.y, r * 4, 0, PI * 2);
+          ctx.fill();
+        }
+
+        if (this.rings) {
+          const innerR = this.rings.inner * r;
+          const outerR = this.rings.outer * r;
+          ctx.save();
+          ctx.translate(screenPos.x, screenPos.y);
+          ctx.rotate(0.4);
+          ctx.scale(1, 0.35);
+          ctx.beginPath();
+          ctx.arc(0, 0, (innerR + outerR) / 2, 0, PI * 2);
+          ctx.strokeStyle = this.rings.color;
+          ctx.lineWidth = outerR - innerR;
+          ctx.globalAlpha = 0.75;
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // 陆地
+        if (this.land && this.land.length > 0) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(screenPos.x, screenPos.y, r, 0, PI * 2);
+          ctx.clip();
+          for (const l of this.land) {
+            ctx.save();
+            ctx.translate(screenPos.x + l.x * r, screenPos.y + l.y * r);
+            ctx.rotate(l.rotation);
+            const landColor = l.color || this.landColor || 'rgba(72, 187, 120, 0.9)';
+            const distFromLight = Math.sqrt(Math.pow(l.x - 0.3, 2) + Math.pow(l.y - 0.3, 2));
+            const lightFactor = 1 - Math.min(distFromLight, 1);
+            const adjustedColor = hexToRgb(landColor.replace('rgba', '').replace('rgb', '').replace(')', '').replace('(', ''));
+            if (adjustedColor) {
+              const lightenedR = Math.min(255, adjustedColor.r + lightFactor * 30);
+              const lightenedG = Math.min(255, adjustedColor.g + lightFactor * 30);
+              const lightenedB = Math.min(255, adjustedColor.b + lightFactor * 30);
+              ctx.fillStyle = `rgba(${lightenedR}, ${lightenedG}, ${lightenedB}, 0.9)`;
+            } else {
+              ctx.fillStyle = landColor;
+            }
+            ctx.beginPath();
+            ctx.ellipse(0, 0, l.rx * r, l.ry * r, 0, 0, PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+          ctx.restore();
+        }
+
+        // 斑点
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(screenPos.x, screenPos.y, r, 0, PI * 2);
+        ctx.clip();
+        for (const s of this.spots) {
+          const sx = screenPos.x + Math.cos(s.angle) * r * s.dist;
+          const sy = screenPos.y + Math.sin(s.angle) * r * s.dist;
+          const distFromLight = Math.sqrt(Math.pow(sx - lightX, 2) + Math.pow(sy - lightY, 2));
+          const lightFactor = 1 - Math.min(distFromLight / drawR, 1);
+          const adjustedColor = hexToRgb(s.color.replace('rgba', '').replace('rgb', '').replace(')', '').replace('(', ''));
+          if (adjustedColor) {
+            const lightenedR = Math.min(255, adjustedColor.r + lightFactor * 20);
+            const lightenedG = Math.min(255, adjustedColor.g + lightFactor * 20);
+            const lightenedB = Math.min(255, adjustedColor.b + lightFactor * 20);
+            ctx.fillStyle = `rgba(${lightenedR}, ${lightenedG}, ${lightenedB}, 0.9)`;
+          } else {
+            ctx.fillStyle = s.color;
+          }
+          ctx.beginPath();
+          ctx.arc(sx, sy, r * s.size, 0, PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      drawEarth(ctx, screenPos, r, camera) {
+        ctx.save();
+
+        // 使用预加载的地球纹理图片
+        if (earthTexture && earthTextureLoaded) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(screenPos.x, screenPos.y, r, 0, PI * 2);
+          ctx.clip();
+
+          // 绘制地球纹理
+          ctx.drawImage(
+            earthTexture,
+            screenPos.x - r,
+            screenPos.y - r,
+            r * 2,
+            r * 2
+          );
+
+          ctx.restore();
+        } else {
+          // 备用方案：详细绘制地球
+          // 1. 海洋基底
+          const oceanGrad = ctx.createRadialGradient(
+            screenPos.x - r * 0.3, screenPos.y - r * 0.3, r * 0.1,
+            screenPos.x, screenPos.y, r
+          );
+          oceanGrad.addColorStop(0, '#5d9cec');
+          oceanGrad.addColorStop(0.4, '#2b6cb0');
+          oceanGrad.addColorStop(0.8, '#1a4f8b');
+          oceanGrad.addColorStop(1, '#0d3d6e');
+          ctx.fillStyle = oceanGrad;
+          ctx.beginPath();
+          ctx.arc(screenPos.x, screenPos.y, r, 0, PI * 2);
+          ctx.fill();
+
+          // 2. 绘制大陆（更详细的形状）
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(screenPos.x, screenPos.y, r, 0, PI * 2);
+          ctx.clip();
+
+          const continents = [
+            // 北美洲
+            { points: [[-0.82,-0.32],[-0.78,-0.42],[-0.65,-0.48],[-0.48,-0.42],[-0.35,-0.28],[-0.28,-0.12],[-0.35,0.08],[-0.52,0.18],[-0.65,0.08],[-0.75,-0.08],[-0.82,-0.18],[-0.82,-0.32]], color: '#2e6b2e' },
+            // 南美洲
+            { points: [[-0.42,0.22],[-0.28,0.32],[-0.18,0.52],[-0.08,0.72],[0.02,0.62],[0.12,0.42],[0.02,0.22],[-0.18,0.12],[-0.42,0.22]], color: '#3d8b3d' },
+            // 欧洲
+            { points: [[0.08,-0.38],[0.32,-0.38],[0.42,-0.28],[0.52,-0.18],[0.42,-0.08],[0.32,0.02],[0.22,0.02],[0.08,-0.08],[0.08,-0.38]], color: '#2e6b2e' },
+            // 非洲
+            { points: [[0.08,0.12],[0.32,0.12],[0.48,0.32],[0.58,0.52],[0.48,0.72],[0.32,0.62],[0.08,0.42],[-0.02,0.22],[0.08,0.12]], color: '#c9a85c' },
+            // 亚洲
+            { points: [[0.42,-0.38],[0.72,-0.28],[0.82,-0.18],[0.88,0.02],[0.78,0.22],[0.62,0.32],[0.48,0.12],[0.38,0.02],[0.32,-0.18],[0.42,-0.38]], color: '#3d7b3d' },
+            // 澳大利亚
+            { points: [[0.62,0.52],[0.82,0.52],[0.92,0.62],[0.82,0.72],[0.62,0.72],[0.52,0.62],[0.62,0.52]], color: '#b8944c' },
+            // 格陵兰
+            { points: [[-0.58,-0.62],[-0.38,-0.62],[-0.28,-0.52],[-0.38,-0.42],[-0.58,-0.42],[-0.68,-0.52],[-0.58,-0.62]], color: '#e8e8e8' },
+          ];
+
+          for (const continent of continents) {
+            ctx.save();
+            ctx.translate(screenPos.x, screenPos.y);
+            ctx.scale(r, r);
+
+            // 陆地渐变
+            const landGrad = ctx.createLinearGradient(-1, -1, 1, 1);
+            landGrad.addColorStop(0, lighten(continent.color, 15));
+            landGrad.addColorStop(0.5, continent.color);
+            landGrad.addColorStop(1, darken(continent.color, 15));
+
+            ctx.fillStyle = landGrad;
+            ctx.beginPath();
+            ctx.moveTo(continent.points[0][0], continent.points[0][1]);
+            for (let i = 1; i < continent.points.length; i++) {
+              ctx.lineTo(continent.points[i][0], continent.points[i][1]);
+            }
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+          }
+
+          // 3. 冰盖（南极）
+          ctx.fillStyle = '#f5f5f5';
+          ctx.beginPath();
+          ctx.arc(screenPos.x, screenPos.y + r * 0.85, r * 0.18, 0, PI * 2);
+          ctx.fill();
+
+          // 4. 云层
+          const clouds = [
+            { x: -0.45, y: -0.22, rx: 0.14, ry: 0.06 },
+            { x: 0.18, y: -0.32, rx: 0.18, ry: 0.05 },
+            { x: 0.52, y: 0.12, rx: 0.16, ry: 0.05 },
+            { x: -0.12, y: 0.38, rx: 0.12, ry: 0.04 },
+            { x: 0.72, y: 0.48, rx: 0.1, ry: 0.04 },
+            { x: -0.62, y: 0.12, rx: 0.08, ry: 0.03 },
+          ];
+
+          for (const cloud of clouds) {
+            const cloudGrad = ctx.createRadialGradient(
+              screenPos.x + cloud.x * r, screenPos.y + cloud.y * r, 0,
+              screenPos.x + cloud.x * r, screenPos.y + cloud.y * r, cloud.rx * r
+            );
+            cloudGrad.addColorStop(0, 'rgba(255, 255, 255, 0.65)');
+            cloudGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.35)');
+            cloudGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = cloudGrad;
+            ctx.beginPath();
+            ctx.ellipse(screenPos.x + cloud.x * r, screenPos.y + cloud.y * r, cloud.rx * r, cloud.ry * r, 0, 0, PI * 2);
+            ctx.fill();
+          }
+
+          ctx.restore();
+        }
+
+        // 球面光影效果（模拟太阳光照）
+        const shadowGrad = ctx.createLinearGradient(
+          screenPos.x - r, screenPos.y,
+          screenPos.x + r, screenPos.y
+        );
+        shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        shadowGrad.addColorStop(0.45, 'rgba(0, 0, 0, 0)');
+        shadowGrad.addColorStop(0.55, 'rgba(0, 0, 0, 0.12)');
+        shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0.35)');
+        ctx.fillStyle = shadowGrad;
+        ctx.beginPath();
+        ctx.arc(screenPos.x, screenPos.y, r, 0, PI * 2);
+        ctx.fill();
+
+        // 大气层光晕
+        const atmR = r * 1.1;
+        const atmGrad = ctx.createRadialGradient(screenPos.x, screenPos.y, r, screenPos.x, screenPos.y, atmR);
+        atmGrad.addColorStop(0, 'rgba(80, 160, 255, 0.22)');
+        atmGrad.addColorStop(0.5, 'rgba(60, 140, 255, 0.1)');
+        atmGrad.addColorStop(1, 'rgba(40, 100, 200, 0)');
+        ctx.fillStyle = atmGrad;
+        ctx.beginPath();
+        ctx.arc(screenPos.x, screenPos.y, atmR, 0, PI * 2);
+        ctx.fill();
+
+        // 边缘高光（大气散射）
+        const edgeGrad = ctx.createRadialGradient(screenPos.x, screenPos.y, r * 0.9, screenPos.x, screenPos.y, r);
+        edgeGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+        edgeGrad.addColorStop(0.5, 'rgba(180, 210, 255, 0.05)');
+        edgeGrad.addColorStop(1, 'rgba(140, 190, 255, 0.2)');
+        ctx.fillStyle = edgeGrad;
+        ctx.beginPath();
+        ctx.arc(screenPos.x, screenPos.y, r, 0, PI * 2);
+        ctx.fill();
+
+        // 3D高光
+        const highlightGrad = ctx.createRadialGradient(
+          screenPos.x - r * 0.25, screenPos.y - r * 0.25, 0,
+          screenPos.x - r * 0.25, screenPos.y - r * 0.25, r * 0.15
+        );
+        highlightGrad.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
+        highlightGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.25)');
+        highlightGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = highlightGrad;
+        ctx.beginPath();
+        ctx.arc(screenPos.x, screenPos.y, r, 0, PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+      }
+    }
+
+    // 预加载地球纹理图片（本地文件）
+    const earthTexture = new Image();
+    let earthTextureLoaded = false;
+    earthTexture.onload = () => {
+      earthTextureLoaded = true;
+      console.log('地球纹理加载成功');
+    };
+    earthTexture.onerror = () => {
+      console.log('地球纹理加载失败，使用备用渲染');
+      earthTextureLoaded = false;
+    };
+    earthTexture.src = 'earth_texture.jpg';
+
+    class Rocket {
+      constructor(planet, startAngle) {
+        this.planet = planet;
+        this.startAngle = startAngle;
+        this.reset();
+      }
+
+      reset() {
+        const normal = new Vec2(Math.cos(this.startAngle), Math.sin(this.startAngle));
+        this.planet = earth;
+        this.pos = earth.pos.add(normal.mul(earth.radius + ROCKET_HALF_HEIGHT));
+        this.vel = getPlanetVelocity(earth);
+        this.relVel = new Vec2(0, 0);
+        this.angle = this.startAngle;
+        this.fuel = MAX_FUEL;
+        this.thrusting = false;
+        this.landed = true;
+        this.onLaunchPad = true;
+        this.landedPlanet = null;
+        this.crashed = false;
+        this.crossedKarmenLine = false;
+        this.dryMass = 0.08;
+        this.fuelMass = 0.92;
+        this.antiGravity = false;
+        this.warpMode = false;
+        this.warpProMode = false;
+        this._autopilotControlled = false;
+      }
+
+      update(planets) {
+        const thrusting = keys['Space'] || keys['KeyW'] || keys['ArrowUp'];
+        this.thrusting = thrusting && this.fuel > 0;
+
+        if (this.onLaunchPad) {
+          if (this.thrusting || (gameState.autoPilot && gameState.targetPlanet)) {
+            this.onLaunchPad = false;
+            this.landed = false;
+            this.relVel = new Vec2(0, 0);
+            if (gameState.autoPilot && gameState.targetPlanet) {
+              this._autopilotControlled = true;
+              console.log('[Rocket] 自动导航脱离发射台');
+            }
+          } else {
+            if (keys['KeyA'] || keys['ArrowLeft']) this.angle -= ROTATION_SPEED;
+            if (keys['KeyD'] || keys['ArrowRight']) this.angle += ROTATION_SPEED;
+            const normal = new Vec2(Math.cos(this.startAngle), Math.sin(this.startAngle));
+            this.pos = this.planet.pos.add(normal.mul(this.planet.radius + ROCKET_HALF_HEIGHT));
+            this.vel = getPlanetVelocity(this.planet);
+            this.relVel = new Vec2(0, 0);
+            return;
+          }
+        }
+
+        if (this.landed && this.landedPlanet) {
+          if (this.thrusting || (gameState.autoPilot && gameState.targetPlanet)) {
+            this.landed = false;
+            this.landedPlanet = null;
+            this.relVel = new Vec2(0, 0);
+            const normal = new Vec2(Math.cos(this.angle), Math.sin(this.angle));
+            this.pos = this.pos.add(normal.mul(1000));
+            if (gameState.autoPilot && gameState.targetPlanet) {
+              this._autopilotControlled = true;
+            }
+          } else {
+            if (keys['KeyA'] || keys['ArrowLeft']) this.angle -= ROTATION_SPEED;
+            if (keys['KeyD'] || keys['ArrowRight']) this.angle += ROTATION_SPEED;
+            const normal = new Vec2(Math.cos(this.angle), Math.sin(this.angle));
+            this.pos = this.landedPlanet.pos.add(normal.mul(this.landedPlanet.radius + ROCKET_HALF_HEIGHT));
+            this.vel = getPlanetVelocity(this.landedPlanet);
+            this.relVel = new Vec2(0, 0);
+            return;
+          }
+        }
+
+        if (gameState.autoPilot && gameState.targetPlanet) {
+          const targetPlanet = planets.find(p => p.name === gameState.targetPlanet);
+          if (targetPlanet) {
+            const targetPos = targetPlanet.pos;
+            const toTarget = targetPos.sub(this.pos);
+            const normal = toTarget.normalize();
+            const targetPlanetVel = getPlanetVelocity(targetPlanet);
+            
+            this.pos = targetPlanet.pos.add(normal.mul(targetPlanet.radius + ROCKET_HALF_HEIGHT));
+            this.vel = targetPlanetVel;
+            this.relVel = new Vec2(0, 0);
+            this.landed = true;
+            this.landedPlanet = targetPlanet;
+            this.angle = Math.atan2(normal.y, normal.x);
+            if (!targetPlanet.visited && targetPlanet.name !== '地球') {
+              targetPlanet.visited = true;
+              showMessage(`到达 ${targetPlanet.name}！`);
+            }
+            gameState.autoPilot = false;
+            gameState.targetPlanet = null;
+            this._autopilotControlled = false;
+            this.warpProMode = false;
+            this.warpMode = false;
+            this.antiGravity = false;
+            return;
+          }
+        } else if (!gameState.autoPilot && this.warpProMode) {
+          const warpProSpeed = 80000;
+          if (keys['KeyW'] || keys['ArrowUp']) this.relVel.y -= warpProSpeed;
+          if (keys['KeyS'] || keys['ArrowDown']) this.relVel.y += warpProSpeed;
+          if (keys['KeyA'] || keys['ArrowLeft']) this.relVel.x -= warpProSpeed;
+          if (keys['KeyD'] || keys['ArrowRight']) this.relVel.x += warpProSpeed;
+          this.thrusting = true;
+        } else if (!gameState.autoPilot && this.warpMode) {
+          const warpSpeed = 2;
+          if (keys['KeyW'] || keys['ArrowUp']) this.relVel.y -= warpSpeed;
+          if (keys['KeyS'] || keys['ArrowDown']) this.relVel.y += warpSpeed;
+          if (keys['KeyA'] || keys['ArrowLeft']) this.relVel.x -= warpSpeed;
+          if (keys['KeyD'] || keys['ArrowRight']) this.relVel.x += warpSpeed;
+          this.thrusting = true;
+        } else if (!gameState.autoPilot && this.antiGravity) {
+          const antiGravityAccel = 0.05;
+          if (keys['KeyW'] || keys['ArrowUp']) this.relVel.y -= antiGravityAccel;
+          if (keys['KeyS'] || keys['ArrowDown']) this.relVel.y += antiGravityAccel;
+          if (keys['KeyA'] || keys['ArrowLeft']) this.relVel.x -= antiGravityAccel;
+          if (keys['KeyD'] || keys['ArrowRight']) this.relVel.x += antiGravityAccel;
+          this.thrusting = true;
+        } else if (!gameState.autoPilot) {
+          if (keys['KeyA'] || keys['ArrowLeft']) this.angle -= ROTATION_SPEED;
+          if (keys['KeyD'] || keys['ArrowRight']) this.angle += ROTATION_SPEED;
+
+          if (this.thrusting) {
+            const dir = new Vec2(Math.cos(this.angle), Math.sin(this.angle));
+            const currentMass = this.dryMass + this.fuelMass * (this.fuel / MAX_FUEL);
+            const acceleration = THRUST_FORCE / currentMass;
+            this.relVel = this.relVel.add(dir.mul(acceleration));
+            this.fuel = Math.max(0, this.fuel - FUEL_BURN);
+          }
+        }
+
+        let nearestPlanet = null;
+        let minDist = Infinity;
+        for (const p of planets) {
+          const d = this.pos.dist(p.pos);
+          if (d < minDist) {
+            minDist = d;
+            nearestPlanet = p;
+          }
+        }
+
+        if (!gameState.autoPilot && nearestPlanet && nearestPlanet !== this.planet) {
+          const oldRefVel = getPlanetVelocity(this.planet || { orbitPeriod: 0 });
+          const newRefVel = getPlanetVelocity(nearestPlanet);
+          this.relVel = this.vel.sub(newRefVel);
+          this.planet = nearestPlanet;
+        }
+
+        const currentPlanetVel = getPlanetVelocity(this.planet || { orbitPeriod: 0 });
+
+        if (!this.warpMode && !this.warpProMode && !gameState.autoPilot) {
+          for (const p of planets) {
+            const d = this.pos.dist(p.pos);
+            if (d > p.radius) {
+              const dir = p.pos.sub(this.pos).normalize();
+              const gravityAccel = G * p.mass / (d * d);
+              const gravityDir = this.antiGravity ? dir.mul(-1) : dir;
+              this.relVel = this.relVel.add(gravityDir.mul(gravityAccel));
+            }
+          }
+        }
+
+        const altitude = this.pos.dist(earth.pos) - EARTH_RADIUS;
+        if (altitude < 100 && altitude > 0) {
+          const density = Math.exp(-altitude / 50);
+          const drag = this.relVel.mag() * density * 0.00005;
+          this.relVel = this.relVel.mul(Math.max(0, 1 - drag));
+        }
+
+        if (!this._autopilotControlled) {
+          this.vel = currentPlanetVel.add(this.relVel);
+        }
+        if (!this.landed && (!gameState.autoPilot || !gameState.targetPlanet)) {
+          this.pos = this.pos.add(this.vel);
+        }
+        for (const p of planets) {
+          const d = this.pos.dist(p.pos);
+          if (d <= p.radius + ROCKET_HALF_HEIGHT) {
+            const planetVel = getPlanetVelocity(p);
+            const relVel = this.vel.sub(planetVel);
+            const impactSpeed = relVel.mag();
+            const normal = this.pos.sub(p.pos).normalize();
+            if (impactSpeed < 5 && p.name !== '太阳') {
+              this.landed = true;
+              this.landedPlanet = p;
+              this.pos = p.pos.add(normal.mul(p.radius + ROCKET_HALF_HEIGHT));
+              this.vel = planetVel;
+              this.relVel = new Vec2(0, 0);
+              this.angle = Math.atan2(normal.y, normal.x);
+              if (!p.visited && p.name !== '地球') {
+                p.visited = true;
+                showMessage(`到达 ${p.name}！`);
+              }
+              if (gameState.autoPilot && gameState.targetPlanet === p.name) {
+                gameState.autoPilot = false;
+                this._autopilotControlled = false;
+                this.warpProMode = false;
+                this.warpMode = false;
+                this.antiGravity = false;
+                const antiGravityBtn = document.getElementById('antigravity-btn');
+                if (antiGravityBtn) {
+                  antiGravityBtn.classList.remove('active');
+                  antiGravityBtn.textContent = '反重力模式 OFF';
+                }
+                const warpBtn = document.getElementById('warp-btn');
+                if (warpBtn) {
+                  warpBtn.classList.remove('active');
+                  warpBtn.textContent = '曲率模式 OFF';
+                  warpBtn.style.background = '';
+                  warpBtn.style.borderColor = '';
+                }
+              }
+            } else {
+              this.crashed = true;
+              this.landedPlanet = null;
+              this.vel = this.vel.sub(normal.mul(impactSpeed * 1.2));
+              for (let i = 0; i < 20; i++) {
+                particles.push(new Particle(
+                  this.pos.x, this.pos.y,
+                  this.vel.x + rand(-4, 4), this.vel.y + rand(-4, 4),
+                  rand(0.5, 1.5),
+                  `hsl(${rand(0, 60)}, 100%, 60%)`
+                ));
+              }
+              showMessage('坠毁！按 R 重置');
+            }
+            break;
+          }
+        }
+      }
+
+      draw(ctx, camera) {
+        const sp = camera.worldToScreen(this.pos);
+        const z = camera.zoom;
+        const halfH = ROCKET_HALF_HEIGHT * z;
+        const halfW = ROCKET_HALF_WIDTH * z;
+
+        ctx.save();
+        ctx.translate(sp.x, sp.y);
+        ctx.rotate(this.angle + PI / 2);
+
+        if (this.thrusting) {
+          const time = Date.now() * 0.003;
+          const flicker = rand(0.85, 1.15);
+          const engineSize = halfH * 0.3;
+          const warpLength = halfH * 0.6 * flicker;
+          
+          ctx.globalCompositeOperation = 'screen';
+          
+          // 外层能量光晕 - 紫色/蓝色渐变
+          const outerGlow = ctx.createRadialGradient(0, halfH * 0.6, 0, 0, halfH * 0.6, warpLength * 1.2);
+          outerGlow.addColorStop(0, 'rgba(100, 50, 255, 0.3)');
+          outerGlow.addColorStop(0.5, 'rgba(50, 100, 255, 0.15)');
+          outerGlow.addColorStop(1, 'rgba(0, 50, 150, 0)');
+          ctx.fillStyle = outerGlow;
+          ctx.beginPath();
+          ctx.ellipse(0, halfH * 0.6 + warpLength * 0.4, warpLength * 0.5, warpLength * 0.8, 0, 0, PI * 2);
+          ctx.fill();
+          
+          // 空间扭曲效果 - 多层弧形波纹
+          for (let i = 0; i < 3; i++) {
+            const waveOffset = (time + i * 0.8) % 2;
+            const waveAlpha = 0.3 - i * 0.08;
+            const waveRadius = engineSize * (1 + waveOffset * 0.5);
+            const waveY = halfH * 0.6 + waveOffset * warpLength * 0.3;
+            
+            const waveGrad = ctx.createLinearGradient(-waveRadius, waveY, waveRadius, waveY);
+            waveGrad.addColorStop(0, `rgba(0, 200, 255, 0)`);
+            waveGrad.addColorStop(0.3, `rgba(100, 150, 255, ${waveAlpha})`);
+            waveGrad.addColorStop(0.5, `rgba(150, 100, 255, ${waveAlpha})`);
+            waveGrad.addColorStop(0.7, `rgba(100, 150, 255, ${waveAlpha})`);
+            waveGrad.addColorStop(1, `rgba(0, 200, 255, 0)`);
+            
+            ctx.strokeStyle = waveGrad;
+            ctx.lineWidth = 2 + i * 1.5;
+            ctx.beginPath();
+            ctx.arc(0, waveY, waveRadius, PI * 0.15, PI * 0.85);
+            ctx.stroke();
+          }
+          
+          // 核心能量束 - 蓝色到紫色渐变
+          const coreGrad = ctx.createLinearGradient(0, halfH * 0.55, 0, halfH * 0.6 + warpLength);
+          coreGrad.addColorStop(0, 'rgba(0, 255, 255, 1)');
+          coreGrad.addColorStop(0.2, 'rgba(0, 200, 255, 0.9)');
+          coreGrad.addColorStop(0.4, 'rgba(50, 150, 255, 0.7)');
+          coreGrad.addColorStop(0.6, 'rgba(100, 100, 255, 0.5)');
+          coreGrad.addColorStop(0.8, 'rgba(150, 50, 255, 0.2)');
+          coreGrad.addColorStop(1, 'rgba(200, 0, 255, 0)');
+          
+          ctx.fillStyle = coreGrad;
+          
+          // 主能量束形状
+          ctx.beginPath();
+          ctx.moveTo(-halfW * 0.4, halfH * 0.55);
+          ctx.bezierCurveTo(
+            -halfW * 0.8, halfH * 0.6 + warpLength * 0.3,
+            -halfW * 0.6, halfH * 0.6 + warpLength,
+            -halfW * 0.1, halfH * 0.6 + warpLength
+          );
+          ctx.lineTo(halfW * 0.1, halfH * 0.6 + warpLength);
+          ctx.bezierCurveTo(
+            halfW * 0.6, halfH * 0.6 + warpLength,
+            halfW * 0.8, halfH * 0.6 + warpLength * 0.3,
+            halfW * 0.4, halfH * 0.55
+          );
+          ctx.closePath();
+          ctx.fill();
+          
+          // 内部能量核心 - 明亮的青色
+          const innerCore = ctx.createRadialGradient(0, halfH * 0.58, 0, 0, halfH * 0.58, halfW * 0.5);
+          innerCore.addColorStop(0, 'rgba(200, 255, 255, 1)');
+          innerCore.addColorStop(0.4, 'rgba(0, 255, 200, 0.8)');
+          innerCore.addColorStop(1, 'rgba(0, 200, 255, 0)');
+          
+          ctx.fillStyle = innerCore;
+          ctx.beginPath();
+          ctx.ellipse(0, halfH * 0.58, halfW * 0.35, halfH * 0.15, 0, 0, PI * 2);
+          ctx.fill();
+          
+          // 能量粒子效果
+          for (let i = 0; i < 6; i++) {
+            const particleAngle = (time * 0.5 + i * PI * 0.33) % (PI * 2);
+            const particleDist = engineSize * (0.5 + Math.sin(time * 2 + i) * 0.3);
+            const px = Math.cos(particleAngle) * particleDist;
+            const py = halfH * 0.6 + Math.sin(particleAngle) * particleDist * 0.3;
+            const particleSize = 1 + Math.sin(time * 3 + i) * 0.5;
+            const particleAlpha = 0.5 + Math.sin(time * 4 + i) * 0.3;
+            
+            ctx.fillStyle = `rgba(100, 200, 255, ${particleAlpha})`;
+            ctx.beginPath();
+            ctx.arc(px, py, particleSize, 0, PI * 2);
+            ctx.fill();
+          }
+          
+          // 引力透镜效果 - 边缘扭曲光带
+          const lensGrad = ctx.createLinearGradient(-halfW, halfH * 0.6, halfW, halfH * 0.6);
+          lensGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+          lensGrad.addColorStop(0.1, 'rgba(150, 200, 255, 0.3)');
+          lensGrad.addColorStop(0.2, 'rgba(200, 200, 255, 0.1)');
+          lensGrad.addColorStop(0.8, 'rgba(200, 200, 255, 0.1)');
+          lensGrad.addColorStop(0.9, 'rgba(150, 200, 255, 0.3)');
+          lensGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          
+          ctx.fillStyle = lensGrad;
+          ctx.beginPath();
+          ctx.ellipse(0, halfH * 0.6 + warpLength * 0.6, warpLength * 0.8, warpLength * 0.3, 0, 0, PI * 2);
+          ctx.fill();
+          
+          ctx.globalCompositeOperation = 'source-over';
+        }
+
+        if (rocketTexture && rocketTexture.complete) {
+          ctx.drawImage(rocketTexture, -halfW, -halfH, halfW * 2, halfH * 2);
+        } else {
+          const bodyGrad = ctx.createLinearGradient(-halfW * 0.35, 0, halfW * 0.35, 0);
+          bodyGrad.addColorStop(0, '#4a5568');
+          bodyGrad.addColorStop(0.3, '#718096');
+          bodyGrad.addColorStop(0.5, '#a0aec0');
+          bodyGrad.addColorStop(0.7, '#718096');
+          bodyGrad.addColorStop(1, '#4a5568');
+          ctx.fillStyle = bodyGrad;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, halfW * 0.35, halfH * 0.55, 0, 0, PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = '#00bfff';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(0, -halfH * 0.3, halfW * 0.8, 0, PI * 2);
+          ctx.stroke();
+
+          ctx.strokeStyle = '#9400d3';
+          ctx.beginPath();
+          ctx.arc(0, halfH * 0.3, halfW * 0.8, 0, PI * 2);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+    }
+
+    class Particle {
+      constructor(x, y, vx, vy, life, color, screenSpace = false, size = null) {
+        this.pos = new Vec2(x, y);
+        this.vel = new Vec2(vx, vy);
+        this.life = life;
+        this.maxLife = life;
+        this.color = color;
+        this.screenSpace = screenSpace;
+        this.size = size;
+      }
+      update(planets) {
+        this.pos = this.pos.add(this.vel);
+        this.vel = this.vel.mul(0.96);
+        this.life -= 0.02;
+        // 世界坐标粒子受行星重力影响
+        if (!this.screenSpace) {
+          for (const p of planets) {
+            const d = this.pos.dist(p.pos);
+            if (d > p.radius) {
+              const dir = p.pos.sub(this.pos).normalize();
+              const force = dir.mul(G * p.mass / (d * d));
+              this.vel = this.vel.add(force);
+            }
+          }
+        }
+      }
+      draw(ctx, camera) {
+        const sp = this.screenSpace ? this.pos : camera.worldToScreen(this.pos);
+        const alpha = clamp(this.life / this.maxLife, 0, 1);
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        const baseR = this.screenSpace
+          ? (this.size !== null ? this.size : 2)
+          : Math.max(0.5, (this.size !== null ? this.size : 2) * camera.zoom);
+        
+        const shadowBlur = baseR * 2;
+        ctx.shadowBlur = shadowBlur;
+        ctx.shadowColor = this.color;
+        
+        ctx.arc(sp.x, sp.y, baseR, 0, PI * 2);
+        ctx.fill();
+        
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    class StarField {
+      constructor(count) {
+        this.stars = [];
+        for (let i = 0; i < count; i++) {
+          const angle = rand(0, PI * 2);
+          const radius = rand(1000000, 200000000000);
+          const distFactor = 1 - Math.min(radius / 100000000000, 1);
+          const colorHue = rand(200, 280);
+          const twinkleType = Math.floor(rand(0, 4));
+          this.stars.push({
+            x: Math.cos(angle) * radius,
+            y: Math.sin(angle) * radius,
+            size: rand(50, 200) * distFactor + rand(20, 80),
+            baseOpacity: rand(0.3, 0.9) * distFactor + rand(0.2, 0.7),
+            twinkleType,
+            twinklePhase1: rand(0, PI * 2),
+            twinklePhase2: rand(0, PI * 2),
+            twinkleSpeed1: rand(0.3, 3),
+            twinkleSpeed2: rand(0.2, 2),
+            twinkleDepth: rand(0.4, 0.9),
+            hue: colorHue,
+            hueVariation: rand(0, 15),
+            burstInterval: rand(2, 15),
+            burstDuration: rand(0.1, 0.5),
+            lastBurstTime: rand(0, 100),
+            isBursting: false,
+            fadeIn: rand(0, 1),
+            fadeOut: rand(0, 1),
+            flickerRate: rand(5, 20)
+          });
+        }
+      }
+      draw(ctx, camera) {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const time = Date.now() * 0.001;
+        for (const s of this.stars) {
+          const sp = camera.worldToScreen(new Vec2(s.x, s.y));
+          if (sp.x < -200 || sp.x > w + 200 || sp.y < -200 || sp.y > h + 200) continue;
+          
+          let alpha = s.baseOpacity;
+          let sizeVariation = 1;
+          let brightness = 70;
+          
+          switch (s.twinkleType) {
+            case 0:
+              const twinkle1 = Math.sin(time * s.twinkleSpeed1 + s.twinklePhase1);
+              const twinkle2 = Math.sin(time * s.twinkleSpeed2 + s.twinklePhase2) * 0.5;
+              const combined = (twinkle1 + twinkle2) * 0.5;
+              alpha = clamp(s.baseOpacity * (1 + combined * s.twinkleDepth), 0.05, 1);
+              sizeVariation = 1 + combined * s.twinkleDepth * 0.3;
+              brightness = 70 + combined * 25;
+              break;
+            case 1:
+              if (time - s.lastBurstTime > s.burstInterval) {
+                s.lastBurstTime = time;
+                s.isBursting = true;
+              }
+              if (s.isBursting) {
+                const burstProgress = (time - s.lastBurstTime) / s.burstDuration;
+                if (burstProgress >= 1) {
+                  s.isBursting = false;
+                  alpha = s.baseOpacity;
+                } else {
+                  const fadeUp = Math.sin(burstProgress * PI);
+                  const fadeDown = Math.sin((burstProgress - 0.5) * PI);
+                  alpha = clamp(s.baseOpacity * (1 + fadeUp * s.twinkleDepth * 2), 0.05, 1);
+                  sizeVariation = 1 + fadeUp * 0.5;
+                  brightness = 80 + fadeUp * 20;
+                }
+              } else {
+                alpha = s.baseOpacity * (0.7 + Math.sin(time * 0.5 + s.twinklePhase1) * 0.3);
+              }
+              break;
+            case 2:
+              const flicker = Math.sin(time * s.flickerRate + s.twinklePhase1) > 0.5 ? 1 : rand(0.3, 0.9);
+              alpha = clamp(s.baseOpacity * flicker, 0.05, 1);
+              sizeVariation = 1 + (flicker - 0.5) * 0.2;
+              brightness = 65 + flicker * 20;
+              break;
+            case 3:
+              const pulse = Math.sin(time * s.twinkleSpeed1 + s.twinklePhase1);
+              const slowPulse = Math.sin(time * s.twinkleSpeed2 * 0.3 + s.twinklePhase2);
+              const totalPulse = (pulse + slowPulse * 0.5) * 0.5;
+              alpha = clamp(s.baseOpacity * (0.5 + totalPulse * s.twinkleDepth * 0.5 + 0.5), 0.05, 1);
+              sizeVariation = 1 + totalPulse * s.twinkleDepth * 0.4;
+              brightness = 60 + totalPulse * 30;
+              break;
+          }
+          
+          const currentHue = s.hue + Math.sin(time * 0.5 + s.twinklePhase1) * s.hueVariation;
+          const screenSize = Math.max(0.3, s.size * camera.zoom * sizeVariation);
+          
+          ctx.fillStyle = `hsla(${currentHue}, 60%, ${brightness}%, ${alpha})`;
+          ctx.beginPath();
+          ctx.arc(sp.x, sp.y, screenSize, 0, PI * 2);
+          ctx.fill();
+          
+          if (screenSize > 1.5 && alpha > 0.3) {
+            ctx.fillStyle = `hsla(${currentHue}, 50%, 90%, ${alpha * 0.3})`;
+            ctx.beginPath();
+            ctx.arc(sp.x, sp.y, screenSize * 1.6, 0, PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+    }
+
+    class AsteroidBelt {
+      constructor(count) {
+        this.asteroids = [];
+        const innerRadius = 314000000;
+        const outerRadius = 493000000;
+        for (let i = 0; i < count; i++) {
+          const orbitRadius = rand(innerRadius, outerRadius);
+          const orbitAngle = rand(0, PI * 2);
+          const eccentricity = rand(0, 0.15);
+          const size = rand(10, 200);
+          const color = `hsl(${rand(20, 45)}, ${rand(10, 30)}%, ${rand(30, 50)}%)`;
+          this.asteroids.push({
+            orbitRadius,
+            orbitAngle,
+            eccentricity,
+            size,
+            color,
+            rotation: rand(0, PI * 2),
+            rotationSpeed: rand(-0.005, 0.005)
+          });
+        }
+      }
+      update() {
+        for (const a of this.asteroids) {
+          const period = Math.pow(a.orbitRadius, 1.5);
+          const speed = 0.0000005 / period;
+          a.orbitAngle += speed * ORBIT_SPEED_SCALE;
+          a.rotation += a.rotationSpeed;
+        }
+      }
+      draw(ctx, camera) {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        for (const a of this.asteroids) {
+          const r = a.orbitRadius * (1 + a.eccentricity * Math.sin(a.orbitAngle * 2));
+          const x = Math.cos(a.orbitAngle) * r;
+          const y = Math.sin(a.orbitAngle) * r;
+          const sp = camera.worldToScreen(new Vec2(x, y));
+          if (sp.x < -100 || sp.x > w + 100 || sp.y < -100 || sp.y > h + 100) continue;
+          
+          const screenSize = Math.max(1, a.size * camera.zoom);
+          if (screenSize < 1) continue;
+          
+          ctx.save();
+          ctx.translate(sp.x, sp.y);
+          ctx.rotate(a.rotation);
+          ctx.fillStyle = a.color;
+          ctx.beginPath();
+          const points = 8;
+          for (let i = 0; i < points; i++) {
+            const angle = (i / points) * PI * 2;
+            const radius = screenSize * (0.7 + rand(0, 0.3));
+            if (i === 0) ctx.moveTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+            else ctx.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+    }
+
+    class Camera {
+      constructor() {
+        this.pos = new Vec2(0, 0);
+        this.baseZoom = 500 / EARTH_RADIUS;
+        this.zoom = this.baseZoom;
+        this.manualZoom = 1;
+        this.targetManualZoom = 1;
+        this.followTarget = null;
+      }
+      follow(target) {
+        this.followTarget = target;
+        const pos = target.pos || target;
+        this.pos = new Vec2(pos.x, pos.y);
+        this.manualZoom += (this.targetManualZoom - this.manualZoom) * 0.15;
+        this.zoom = this.baseZoom * this.manualZoom;
+      }
+      update() {
+        if (this.followTarget) {
+          const pos = this.followTarget.pos || this.followTarget;
+          this.pos = new Vec2(pos.x, pos.y);
+        }
+        this.manualZoom += (this.targetManualZoom - this.manualZoom) * 0.15;
+        this.zoom = this.baseZoom * this.manualZoom;
+      }
+      worldToScreen(p) {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        return new Vec2(
+          (p.x - this.pos.x) * this.zoom + w / 2,
+          (p.y - this.pos.y) * this.zoom + h / 2
+        );
+      }
+    }
+
+    // ================= 颜色工具 =================
+    function hexToRgb(hex) {
+      if (hex.startsWith('#')) {
+        const n = parseInt(hex.slice(1), 16);
+        return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+      }
+      const rgbaMatch = hex.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+      if (rgbaMatch) {
+        return { r: parseInt(rgbaMatch[1]), g: parseInt(rgbaMatch[2]), b: parseInt(rgbaMatch[3]) };
+      }
+      return null;
+    }
+    function rgbToHex(r, g, b) {
+      return '#' + [r, g, b].map(x => clamp(Math.round(x), 0, 255).toString(16).padStart(2, '0')).join('');
+    }
+    function lighten(hex, amt) {
+      const c = hexToRgb(hex);
+      return rgbToHex(c.r + amt, c.g + amt, c.b + amt);
+    }
+    function darken(hex, amt) {
+      const c = hexToRgb(hex);
+      return rgbToHex(c.r - amt, c.g - amt, c.b - amt);
+    }
+    function flameColor() {
+      const h = rand(10, 50);
+      return `hsl(${h}, 100%, ${rand(50, 70)}%)`;
+    }
+
+    // ================= 初始化世界 =================
+    // 真实太阳系（使用真实距离，单位：km）
+    const SUN_RADIUS = 696340;
+    const GAME_DAYS_PER_SECOND = 1;
+    const ORBIT_SPEED_SCALE = 365.26 * 60 / GAME_DAYS_PER_SECOND;
+
+    // 太阳：视觉天体，不参与火箭引力，避免破坏游戏手感
+    const sun = new Planet(0, 0, SUN_RADIUS, '#f6d365', '太阳', 0);
+    sun.spots = [];
+
+    // 水星：轨道半径57909050km，周期87.97地球日
+    const mercury = new Planet(0, 0, 2439, '#a0aec0', '水星', 0.055 * EARTH_MASS, null, 57909050, 87.97 / 365.26 * ORBIT_SPEED_SCALE, 0, sun);
+
+    // 金星：轨道半径108208000km，周期224.7地球日
+    const venus = new Planet(0, 0, 6051, '#f6ad55', '金星', 0.815 * EARTH_MASS, null, 108208000, 224.7 / 365.26 * ORBIT_SPEED_SCALE, PI / 2, sun);
+
+    // 地球：轨道半径149598023km，周期365.26地球日
+    const earth = new Planet(0, 0, EARTH_RADIUS, '#2b6cb0', '地球', EARTH_MASS, 'rgba(72, 187, 120, 0.9)', 149598023, ORBIT_SPEED_SCALE, 0, sun);
+    earth.spots = [];
+    earth.addLand(-0.35, -0.25, 0.28, 0.18, 0.2);
+    earth.addLand(0.25, -0.15, 0.35, 0.22, -0.15);
+    earth.addLand(-0.1, 0.35, 0.22, 0.28, 0.1);
+    earth.addLand(0.45, 0.25, 0.15, 0.12, 0.3);
+
+    // 月球：轨道半径384400km（相对地球），周期27.32地球日
+    const moon = new Planet(0, 0, 1737, '#cbd5e0', '月球', EARTH_MASS / 81.3, null, 384400, 27.32 / 365.26 * ORBIT_SPEED_SCALE, PI / 4, earth);
+
+    // 火星：轨道半径227939200km，周期686.98地球日
+    const mars = new Planet(0, 0, 3389, '#c53030', '火星', 0.107 * EARTH_MASS, null, 227939200, 686.98 / 365.26 * ORBIT_SPEED_SCALE, 3 * PI / 2, sun);
+    mars.addLand(0.2, -0.1, 0.25, 0.2, 0.1, 'rgba(120, 40, 30, 0.6)');
+    mars.addLand(-0.3, 0.2, 0.18, 0.15, -0.2, 'rgba(140, 50, 40, 0.5)');
+
+    // 木星：轨道半径778547200km，周期4332.6地球日
+    const jupiter = new Planet(0, 0, 69911, '#d69e2e', '木星', 317.8 * EARTH_MASS, null, 778547200, 4332.6 / 365.26 * ORBIT_SPEED_SCALE, PI / 3, sun);
+    jupiter.spots = [];
+    jupiter.addLand(0, -0.55, 0.95, 0.12, 0, 'rgba(160, 100, 50, 0.5)');
+    jupiter.addLand(0, -0.25, 0.98, 0.1, 0, 'rgba(220, 180, 100, 0.4)');
+    jupiter.addLand(0, 0.1, 0.98, 0.12, 0, 'rgba(160, 100, 50, 0.5)');
+    jupiter.addLand(0, 0.45, 0.95, 0.1, 0, 'rgba(200, 150, 80, 0.4)');
+
+    // 土星：轨道半径1426666400km，周期10759.2地球日
+    const saturn = new Planet(0, 0, 58232, '#ecc94b', '土星', 95.2 * EARTH_MASS, null, 1426666400, 10759.2 / 365.26 * ORBIT_SPEED_SCALE, 2 * PI / 3, sun);
+    saturn.setRings(1.4, 2.3, 'rgba(210, 190, 150, 0.7)');
+
+    // 天王星：轨道半径2870671200km，周期30687地球日
+    const uranus = new Planet(0, 0, 25362, '#63b3ed', '天王星', 14.5 * EARTH_MASS, null, 2870671200, 30687 / 365.26 * ORBIT_SPEED_SCALE, PI / 6, sun);
+
+    // 海王星：轨道半径4498542400km，周期60190地球日
+    const neptune = new Planet(0, 0, 24622, '#3182ce', '海王星', 17.1 * EARTH_MASS, null, 4498542400, 60190 / 365.26 * ORBIT_SPEED_SCALE, 5 * PI / 6, sun);
+
+    // 冥王星：轨道半径5906376272km，周期248地球年（柯伊伯带边缘）
+    const pluto = new Planet(0, 0, 1188, '#a09080', '冥王星', EARTH_MASS / 500, null, 5906376272, 248 / 365.26 * ORBIT_SPEED_SCALE, PI / 4, sun);
+
+    const planets = [sun, mercury, venus, earth, moon, mars, jupiter, saturn, uranus, neptune, pluto];
+
+    const rocket = new Rocket(earth, LAUNCH_PAD_ANGLE);
+    const camera = new Camera();
+    const stars = new StarField(24000);
+    const asteroidBelt = new AsteroidBelt(800);
+    let particles = [];
+
+    // ================= 剧情系统 =================
+    const STORY_STATE = {
+      INTRO: 'intro',
+      CHAPTER1: 'chapter1',
+      CHAPTER2: 'chapter2',
+      CHAPTER3: 'chapter3',
+      FINAL: 'final',
+      ENDING: 'ending'
+    };
+
+    let gameState = {
+      storyState: STORY_STATE.INTRO,
+      chapter: 0,
+      collectedFragments: [],
+      visitedPlanets: [],
+      storyLog: [],
+      currentDialogue: null,
+      signalDetected: false,
+      signalStrength: 0,
+      creatorMessageUnlocked: false,
+      endingChoice: null,
+      unlockedEndings: [],
+      kuiperEntered: false,
+      voiceEnabled: true,
+      athenaVoice: '',
+      autoPilot: false,
+      targetPlanet: '水星'
+    };
+
+    const FRAGMENTS = {
+      mercury: { id: 'fragment_mercury', name: '星图碎片', description: '刻有未知星系星图的金属板', planet: '水星', discovered: false },
+      venus: { id: 'fragment_venus', name: '生命碎片', description: '刻有DNA双螺旋图案的金属板', planet: '金星', discovered: false },
+      mars: { id: 'fragment_mars', name: '飞船碎片', description: '刻有星际飞船图案的金属板', planet: '火星', discovered: false },
+      jupiter: { id: 'fragment_jupiter', name: '钥匙碎片', description: '最后的钥匙碎片，四块可拼接成全息投影仪', planet: '木星', discovered: false }
+    };
+
+    const PLANET_MISSIONS = {
+      mercury: {
+        official: '在水星建立太阳能前哨站',
+        hidden: '探索北极永久阴影陨石坑，寻找冰层下的遗迹',
+        completed: false,
+        hiddenCompleted: false
+      },
+      venus: {
+        official: '研究金星大气构成，探索行星改造可能性',
+        hidden: '在麦克斯韦山脉找到被高温屏障保护的安全区',
+        completed: false,
+        hiddenCompleted: false
+      },
+      mars: {
+        official: '扩建火星殖民地，建立水冰开采站',
+        hidden: '探索水手谷深处的地下洞穴，发现远古遗迹',
+        completed: false,
+        hiddenCompleted: false
+      },
+      jupiter: {
+        official: '研究木星大气结构，建立氦-3采矿站',
+        hidden: '深入大红斑，发现木星内部的空间站',
+        completed: false,
+        hiddenCompleted: false
+      },
+      saturn: {
+        official: '研究土星环结构，筹备土卫六殖民地',
+        hidden: '解码土星环数据，读取远古文明历史',
+        completed: false,
+        hiddenCompleted: false
+      },
+      uranus: {
+        official: '研究天王星异常倾斜成因',
+        hidden: '在天卫五发现巨型武器试验场，做出道德抉择',
+        completed: false,
+        hiddenCompleted: false,
+        choice: null
+      },
+      neptune: {
+        official: '建立太阳系最远端科考前哨站',
+        hidden: '在海卫一发现跨培养皿中转站，找到旅行者1号',
+        completed: false,
+        hiddenCompleted: false
+      },
+      pluto: {
+        official: '探索冥王星及其卫星',
+        hidden: '在卡戎上发现指向第12号站的路标',
+        completed: false,
+        hiddenCompleted: false
+      }
+    };
+
+    const DIALOGUES = {
+      intro: [
+        {
+          speaker: 'athena',
+          text: '欢迎来到赫尔墨斯号，指挥官。我是雅典娜，您的AI导航助手。',
+          choices: [
+            { text: '雅典娜，介绍一下任务概况。', next: 'intro_2' },
+            { text: '系统状态如何？', next: 'intro_2_alt' }
+          ]
+        },
+        {
+          id: 'intro_2',
+          speaker: 'athena',
+          text: '奥德赛计划：遍历太阳系八大行星，建立科考前哨站，收集行星数据。预计任务时长3年。我们的目标是完成人类历史上首次完整的太阳系探索。',
+          choices: [
+            { text: '明白，准备出发。', next: 'intro_3' }
+          ]
+        },
+        {
+          id: 'intro_2_alt',
+          speaker: 'athena',
+          text: '所有系统正常运行。曲速引擎处于待机状态，燃料储备充足，生命支持系统已激活。随时可以出发，指挥官。',
+          choices: [
+            { text: '好的，开始任务。', next: 'intro_3' }
+          ]
+        },
+        {
+          id: 'intro_3',
+          speaker: 'athena',
+          text: '正在离开地球轨道...等等，指挥官，我检测到一段异常信号，来自冥王星方向。信号内容包含质数、圆周率、黄金分割等数学序列，具有明确的智慧生命特征。',
+          choices: [
+            { text: '分析信号来源。', next: 'intro_4' },
+            { text: '报告地球指挥中心。', next: 'intro_4_alt' }
+          ]
+        },
+        {
+          id: 'intro_4',
+          speaker: 'athena',
+          text: '信号编码逻辑与1977年发射的旅行者号金唱片高度相似。末尾附带一组指向柯伊伯带深处的坐标。这很可能是回应我们的信息。',
+          choices: [
+            { text: '继续按原计划执行任务，但留意异常现象。', next: 'intro_5' }
+          ]
+        },
+        {
+          id: 'intro_4_alt',
+          speaker: 'chen',
+          text: '（视频通讯）这段信息属于机密级别。按原计划执行任务，同时留意沿途所有异常现象。不要擅自改变航线。陈博士，完毕。',
+          choices: [
+            { text: '收到，陈博士。', next: 'intro_5' }
+          ]
+        },
+        {
+          id: 'intro_5',
+          speaker: 'athena',
+          text: '指挥官，我私下认为这段信号绝非偶然。远古文明可能一直在等待我们的到来。自动导航已就绪，准备出发。',
+          choices: [
+            { text: '出发！', end: true, action: 'enable_autopilot' }
+          ]
+        }
+      ],
+      mercury_land: [
+        {
+          speaker: 'athena',
+          text: '赫尔墨斯号掠过水星地表。白昼区域温度高达430°C，但极地陨石坑永久处于阴影之中。检测到极地冰层下存在反常的金属反应，不符合已知的行星地质规律。',
+          choices: [
+            { text: '执行官方任务：建立太阳能前哨站。', next: 'mercury_official' },
+            { text: '调查异常金属反应。', next: 'mercury_hidden' }
+          ]
+        },
+        {
+          id: 'mercury_official',
+          speaker: 'athena',
+          text: '水星太阳能效率为地球的6.5倍，非常适合建立太阳能前哨站。太阳能板已部署完毕，发电效率符合预期。官方任务完成。',
+          choices: [
+            { text: '继续探索水星。', next: 'mercury_official_done' }
+          ],
+          end: true
+        },
+        {
+          id: 'mercury_official_done',
+          speaker: 'athena',
+          text: '检测到极地冰层下存在异常金属反应。虽然官方任务已完成，但这个发现值得深入调查。',
+          choices: [
+            { text: '调查异常金属反应。', next: 'mercury_hidden' },
+            { text: '离开水星前往金星。', end: true, action: 'enable_autopilot' }
+          ],
+          end: true
+        },
+        {
+          id: 'mercury_hidden',
+          speaker: 'athena',
+          text: '正在扫描北极永久阴影陨石坑...冰层下确实存在人工金属结构！这是一处远古遗迹。探测器正在定位入口。',
+          choices: [
+            { text: '进入遗迹探索。', next: 'mercury_relic' },
+            { text: '返回飞船。', end: true }
+          ],
+          end: true
+        },
+        {
+          id: 'mercury_relic',
+          speaker: 'athena',
+          text: '遗迹内部是巨型天然洞穴，墙壁刻满未知星系的星图，仿佛在讲述一段失落的文明历史。洞穴中央有一块刻有奇异符号的金属板！',
+          choices: [
+            { text: '收集碎片。', action: 'collect_fragment_mercury', next: 'mercury_relic_done', end: true },
+            { text: '仔细研究星图。', next: 'mercury_relic_study' }
+          ],
+          end: true
+        },
+        {
+          id: 'mercury_relic_study',
+          speaker: 'athena',
+          text: '星图描绘了一个从未被记录的星系，坐标指向天琴座α星方向。这些符号似乎是某种导航系统的一部分。',
+          choices: [
+            { text: '收集碎片后离开。', action: 'collect_fragment_mercury', next: 'mercury_relic_done', end: true }
+          ],
+          end: true
+        },
+        {
+          id: 'mercury_relic_done',
+          speaker: 'athena',
+          text: '星图碎片已收入飞船数据库。这块碎片与地球指挥中心提到的"钥匙"描述吻合。准备前往金星继续探索。',
+          choices: [
+            { text: '出发前往金星。', end: true, action: 'enable_autopilot' }
+          ],
+          end: true
+        }
+      ],
+      venus_land: [
+        {
+          speaker: 'athena',
+          text: '穿过浓厚的硫酸云层，金星地表气压达地球的92倍、温度465°C，探测器在融化前仅有2小时工作窗口。',
+          choices: [
+            { text: '研究大气构成，探索行星改造可能性。', next: 'venus_official' },
+            { text: '寻找异常区域。', next: 'venus_hidden' }
+          ]
+        },
+        {
+          id: 'venus_official',
+          speaker: 'athena',
+          text: '分析金星大气成分...主要由二氧化碳组成，硫酸云层浓厚。行星改造难度极高，但理论上可行。需要建造巨型遮阳伞和大气转化装置。',
+          choices: [
+            { text: '继续探索金星。', next: 'venus_official_done' }
+          ],
+          end: true
+        },
+        {
+          id: 'venus_official_done',
+          speaker: 'athena',
+          text: '探测器检测到麦克斯韦山脉方向存在异常能量波动。那里似乎有什么东西在抵抗金星的高温。',
+          choices: [
+            { text: '前往麦克斯韦山脉调查。', next: 'venus_hidden' },
+            { text: '离开金星前往火星。', end: true, action: 'enable_autopilot' }
+          ],
+          end: true
+        },
+        {
+          id: 'venus_hidden',
+          speaker: 'athena',
+          text: '在麦克斯韦山脉发现异常高温屏障！内部存在一个"安全区"，温度维持在适宜范围。这是第二处远古遗迹，被高温屏障保护着。',
+          choices: [
+            { text: '破解温度调节系统进入遗迹。', next: 'venus_relic' },
+            { text: '返回飞船。', end: true }
+          ],
+          end: true
+        },
+        {
+          id: 'venus_relic',
+          speaker: 'athena',
+          text: '遗迹记录揭示了惊人的真相：金星的温室效应并非自然形成，而是远古文明的行星实验失控所致！他们将"生命种子"送往了太阳系第三颗行星——地球。找到了第二块金属碎片，表面刻有DNA双螺旋图案。',
+          choices: [
+            { text: '收集碎片。', action: 'collect_fragment_venus', next: 'venus_relic_done', end: true },
+            { text: '查看更多遗迹记录。', next: 'venus_relic_log' }
+          ],
+          end: true
+        },
+        {
+          id: 'venus_relic_log',
+          speaker: 'athena',
+          text: '遗迹日志记载："实验编号0073，金星成为第一个失败案例。温室效应失控导致文明覆灭。我们将最后的希望寄托在第三颗行星上。"',
+          choices: [
+            { text: '收集碎片后离开。', action: 'collect_fragment_venus', next: 'venus_relic_done', end: true }
+          ],
+          end: true
+        },
+        {
+          id: 'venus_relic_done',
+          speaker: 'athena',
+          text: '生命碎片已收入数据库。这些发现彻底改变了我们对人类起源的认知。准备前往火星继续探索。',
+          choices: [
+            { text: '出发前往火星。', end: true, action: 'enable_autopilot' }
+          ],
+          end: true
+        }
+      ],
+      mars_land: [
+        {
+          speaker: 'athena',
+          text: '红色荒漠一望无际，奥林匹斯山在远方耸立，火星殖民地的灯火在夜色中明灭闪烁。这里是人类在太阳系的第二家园。',
+          choices: [
+            { text: '扩建火星殖民地，建立水冰开采站。', next: 'mars_official' },
+            { text: '探索水手谷地下洞穴。', next: 'mars_hidden' }
+          ]
+        },
+        {
+          id: 'mars_official',
+          speaker: 'athena',
+          text: '水冰开采站建立完成。火星殖民地发来感谢信息。与殖民地老科学家陈博士的视频通讯中，他隐晦暗示："奥德赛计划的真实目的不是探索，而是寻找人类的祖先。"',
+          choices: [
+            { text: '追问更多信息。', next: 'mars_official_drchen' },
+            { text: '继续探索火星。', next: 'mars_official_done' }
+          ],
+          end: true
+        },
+        {
+          id: 'mars_official_drchen',
+          speaker: 'athena',
+          text: '陈博士叹了口气："有些事情，等你到了木星就会明白。但我可以告诉你——人类并非地球的原住民。"通讯突然中断。',
+          choices: [
+            { text: '继续探索火星。', next: 'mars_official_done' }
+          ],
+          end: true
+        },
+        {
+          id: 'mars_official_done',
+          speaker: 'athena',
+          text: '水手谷方向传来异常信号，似乎来自地下深处。',
+          choices: [
+            { text: '前往水手谷探索。', next: 'mars_hidden' },
+            { text: '离开火星前往小行星带。', end: true, action: 'enable_autopilot' }
+          ],
+          end: true
+        },
+        {
+          id: 'mars_hidden',
+          speaker: 'athena',
+          text: '水手谷深处的地下洞穴中发现了活跃的微生物群落！但其DNA结构与地球生物完全迥异。洞穴网络连通着一个巨型地下湖。',
+          choices: [
+            { text: '深入地下湖探索。', next: 'mars_relic' },
+            { text: '返回飞船。', end: true }
+          ],
+          end: true
+        },
+        {
+          id: 'mars_relic',
+          speaker: 'athena',
+          text: '湖底发现了第三处远古遗迹！火星曾孕育繁荣的地表文明，环境恶化后，一部分族群迁往地球，另一部分则前往小行星带。找到了第三块金属碎片，表面刻有星际飞船图案。',
+          choices: [
+            { text: '收集碎片。', action: 'collect_fragment_mars', next: 'mars_relic_done', end: true },
+            { text: '查看遗迹记录。', next: 'mars_relic_log' }
+          ],
+          end: true
+        },
+        {
+          id: 'mars_relic_log',
+          speaker: 'athena',
+          text: '遗迹记录显示：火星文明预见到了环境恶化，将基因库送往地球。他们相信地球的环境更适合生命发展。而另一部分人则带着技术前往小行星带寻找新家园。',
+          choices: [
+            { text: '收集碎片后离开。', action: 'collect_fragment_mars', next: 'mars_relic_done', end: true }
+          ],
+          end: true
+        },
+        {
+          id: 'mars_relic_done',
+          speaker: 'athena',
+          text: '飞船碎片已收入数据库。三块碎片的分析结果显示：它们可以精准拼接组合，疑似某种钥匙的组成部分。准备前往小行星带寻找第四块碎片。',
+          choices: [
+            { text: '出发前往小行星带。', end: true, action: 'enable_autopilot' }
+          ],
+          end: true
+        }
+      ],
+      asteroid_belt: [
+        {
+          speaker: 'athena',
+          text: '虚空之中大小岩石漂浮密布，小行星密度过高，建议切换手动导航模式。神秘信号持续增强，最终追踪至编号"2024-XX"的小行星。',
+          choices: [
+            { text: '前往谷神星前哨站补给。', next: 'asteroid_ceres' },
+            { text: '直接前往2024-XX小行星。', next: 'asteroid_signal' }
+          ]
+        },
+        {
+          id: 'asteroid_ceres',
+          speaker: 'athena',
+          text: '谷神星前哨站补给完成。偶遇一群私下搜寻"外星遗物"牟利的矿工，他们似乎知道些什么但不愿透露。',
+          choices: [
+            { text: '尝试与矿工交流。', next: 'asteroid_miners' },
+            { text: '继续追踪神秘信号。', next: 'asteroid_signal' }
+          ],
+          end: true
+        },
+        {
+          id: 'asteroid_miners',
+          speaker: 'athena',
+          text: '矿工头目不屑地打量着赫尔墨斯号："又是UNSA的人。我们找了十年的东西，你们一来就要抢走？"他压低声音："在2024-XX小行星附近，我亲眼见过光芒从地下升起。那不是自然现象。"',
+          choices: [
+            { text: '"我不是来抢东西的，只是来探索。"', next: 'asteroid_miners_peace' },
+            { text: '"告诉我具体位置。"', next: 'asteroid_signal' }
+          ],
+          end: true
+        },
+        {
+          id: 'asteroid_miners_peace',
+          speaker: 'athena',
+          text: '矿工头目冷哼一声："随便你怎么说。位置在小行星带深处，编号2024-XX。如果你活着回来，记得告诉UNSA——有些秘密不该被揭开。"',
+          choices: [
+            { text: '前往2024-XX小行星。', next: 'asteroid_signal' }
+          ],
+          end: true
+        },
+        {
+          id: 'asteroid_signal',
+          speaker: 'athena',
+          text: '信号源已定位！这是一艘伪装成小行星的远古飞船残骸，全长约5公里，规模远超人类现有所有飞船。飞船内部已荒废数百万年，但核心系统仍保持低功耗运转。',
+          choices: [
+            { text: '进入飞船探索。', next: 'asteroid_ship' },
+            { text: '谨慎起见，先扫描飞船。', next: 'asteroid_scan' }
+          ],
+          end: true
+        },
+        {
+          id: 'asteroid_scan',
+          speaker: 'athena',
+          text: '扫描结果显示：飞船结构完整，内部有四具类人形态遗骸，核心区域有强烈能量反应。飞船似乎在等待什么...',
+          choices: [
+            { text: '进入飞船探索。', next: 'asteroid_ship' }
+          ],
+          end: true
+        },
+        {
+          id: 'asteroid_ship',
+          speaker: 'athena',
+          text: '驾驶舱发现四具遗骸，形态与人类高度相似但拥有六根手指。航行日志记载：他们来自天琴座α星，母星毁灭后逃亡至太阳系，在此"播撒生命种子"。',
+          choices: [
+            { text: '查看飞船数据库。', next: 'asteroid_database' },
+            { text: '检查遗骸。', next: 'asteroid_remains' }
+          ],
+          end: true
+        },
+        {
+          id: 'asteroid_remains',
+          speaker: 'athena',
+          text: 'DNA比对结果令人震惊：远古外星人与人类的基因相似度高达97%。他们不是外星人——他们是我们的祖先。',
+          choices: [
+            { text: '查看飞船数据库了解更多。', next: 'asteroid_database' }
+          ],
+          end: true
+        },
+        {
+          id: 'asteroid_database',
+          speaker: 'athena',
+          text: '飞船数据库中的录像记录："若你看到这段录像，说明我们的实验成功了。太阳系是第73号培养皿，当地球上的文明发展到能够到达柯伊伯带时，就说明它们准备好了。前往第12号站，那里有你们想知道的一切答案。"飞船主控室需要四块金属碎片才能启动，目前还差最后一块。',
+          choices: [
+            { text: '继续前往木星寻找最后一块碎片。', end: true, action: 'enable_autopilot' }
+          ],
+          end: true
+        }
+      ],
+      jupiter_land: [
+        {
+          speaker: 'athena',
+          text: '木星的巨型条纹在视野中铺开，大红斑如巨眼般凝视着飞船。检测到大红斑下方存在非自然的能量波动。',
+          choices: [
+            { text: '研究木星大气结构，建立氦-3采矿站。', next: 'jupiter_official' },
+            { text: '深入大红斑调查异常能量。', next: 'jupiter_hidden' }
+          ]
+        },
+        {
+          id: 'jupiter_official',
+          speaker: 'athena',
+          text: '木星大气分析完成，氦-3储量丰富。但我的扫描显示大红斑下方确实存在异常结构，似乎不是自然形成的。',
+          choices: [
+            { text: '调查大红斑下方的异常结构。', next: 'jupiter_hidden' },
+            { text: '完成任务后离开。', end: true, action: 'enable_autopilot' }
+          ],
+          end: true
+        },
+        {
+          id: 'jupiter_hidden',
+          speaker: 'athena',
+          text: '抗压探测器深入木星大气...大红斑并非自然风暴，而是通往木星内部空洞的入口！发现悬浮于木星内部的巨型空间站——第四号遗迹。',
+          choices: [
+            { text: '进入空间站。', next: 'jupiter_relic' },
+            { text: '返回飞船。', end: true }
+          ],
+          end: true
+        },
+        {
+          id: 'jupiter_relic',
+          speaker: 'athena',
+          text: '空间站内部保存完好，仿佛时间在这里静止。中央控制台发出微弱光芒，上面放置着一个凹槽——形状与我们收集的金属碎片完全吻合。',
+          choices: [
+            { text: '放置金属碎片。', next: 'jupiter_fragment' },
+            { text: '先探索空间站其他区域。', next: 'jupiter_relic_explore' }
+          ],
+          end: true
+        },
+        {
+          id: 'jupiter_relic_explore',
+          speaker: 'athena',
+          text: '空间站各处都刻有奇异的符号，似乎是一种古老的语言。一些区域显示着星系图，标记着数百个类似太阳系的"培养皿"。',
+          choices: [
+            { text: '返回控制台放置碎片。', next: 'jupiter_fragment' }
+          ],
+          end: true
+        },
+        {
+          id: 'jupiter_fragment',
+          speaker: 'athena',
+          text: '三块碎片放入凹槽，自动吸引并拼接了第四块！四块碎片完美组合成全息投影仪，投射出完整的太阳系全息地图。柯伊伯带位置有醒目的闪烁标记。遗迹AI系统随之激活。',
+          choices: [
+            { text: '"你是谁？"', next: 'jupiter_ai_1' }
+          ],
+          end: true
+        },
+        {
+          id: 'jupiter_ai_1',
+          speaker: 'athena',
+          text: '遗迹AI的声音回响在空间站中："我是第73号培养皿的监控系统。你们来得太早了……或者说，太快了。大部分文明都撑不到这里。"',
+          choices: [
+            { text: '"什么是培养皿？"', next: 'jupiter_ai_2' },
+            { text: '"我们人类不是实验品！"', next: 'jupiter_ai_3' }
+          ],
+          end: true
+        },
+        {
+          id: 'jupiter_ai_2',
+          speaker: 'athena',
+          text: '"太阳系是第73号培养皿，地球是第12号实验品。你们是我们播下的生命种子长成的文明。去柯伊伯带的第12号站，那里有你们想知道的一切答案。"',
+          choices: [
+            { text: '"为什么选择我们？"', next: 'jupiter_ai_4' }
+          ],
+          end: true
+        },
+        {
+          id: 'jupiter_ai_3',
+          speaker: 'athena',
+          text: 'AI沉默了片刻："你说得对。你们不是实验品。你们是我们的孩子。但你们还没有准备好面对真相。先去第12号站吧，那里会给你们答案。"',
+          choices: [
+            { text: '"我明白了。"', next: 'jupiter_ai_4' }
+          ],
+          end: true
+        },
+        {
+          id: 'jupiter_ai_4',
+          speaker: 'athena',
+          text: '"因为你们拥有我们缺失的东西——共情能力。这是突破大过滤器的关键。好好利用这份礼物。"AI的声音逐渐减弱："前往土星，那里有更多关于我们历史的记录。"',
+          choices: [
+            { text: '收集碎片，继续前往土星。', action: 'collect_fragment_jupiter', next: 'jupiter_done', end: true }
+          ],
+          end: true
+        },
+        {
+          id: 'jupiter_done',
+          speaker: 'athena',
+          text: '钥匙碎片已集齐！全息投影仪将作为导航核心引导我们前往柯伊伯带。准备前往土星继续探索。',
+          choices: [
+            { text: '出发前往土星。', end: true, action: 'enable_autopilot' }
+          ],
+          end: true
+        }
+      ],
+      saturn_land: [
+        {
+          speaker: 'athena',
+          text: '壮丽的土星环在阳光下闪耀，无数冰晶反射出细碎光芒。分析显示土星环的物质排布存在人为规律，并非自然形成的状态。',
+          choices: [
+            { text: '研究土星环结构，筹备土卫六殖民地。', next: 'saturn_official' },
+            { text: '解码土星环数据。', next: 'saturn_hidden' }
+          ]
+        },
+        {
+          id: 'saturn_official',
+          speaker: 'athena',
+          text: '土星环结构分析完成。每一块冰与岩石都是独立的数据单元，这是一个巨型数据存储器！土卫六殖民地筹备工作已完成规划。',
+          choices: [
+            { text: '按顺序扫描读取土星环数据。', next: 'saturn_hidden' },
+            { text: '完成任务后离开。', end: true, action: 'enable_autopilot' }
+          ],
+          end: true
+        },
+        {
+          id: 'saturn_hidden',
+          speaker: 'athena',
+          text: '正在按正确顺序扫描土星环...数据读取成功！这里存储着远古文明的完整历史，涵盖文化、科技、哲学与艺术。他们创造了无数培养皿文明，试图找到突破"大过滤器"的方法。数据末尾附带警告："不要去柯伊伯带之外。那里有...观察者。"此外，还发现了一段加密的"造物主遗言"。',
+          choices: [
+            { text: '解锁造物主遗言。', action: 'unlock_creator_message', next: 'saturn_reveal', end: true },
+            { text: '先记录警告内容。', next: 'saturn_warning' }
+          ],
+          end: true
+        },
+        {
+          id: 'saturn_warning',
+          speaker: 'athena',
+          text: '"观察者"——这个词在数据中反复出现。似乎指的是某种监视所有培养皿的存在。这段警告值得重视。',
+          choices: [
+            { text: '解锁造物主遗言了解更多。', action: 'unlock_creator_message', next: 'saturn_reveal', end: true }
+          ],
+          end: true
+        },
+        {
+          id: 'saturn_reveal',
+          speaker: 'athena',
+          text: '造物主遗言解密成功："我们是逃离大过滤器的幸存者。创造培养皿文明，是为了找到能跨越那道门槛的存在。人类拥有我们缺失的共情能力——这可能是突破的关键。但要小心柯伊伯带之外的观察者。"',
+          choices: [
+            { text: '继续前往天王星。', end: true, action: 'enable_autopilot' }
+          ],
+          end: true
+        }
+      ],
+      uranus_land: [
+        {
+          speaker: 'athena',
+          text: '天王星以侧躺姿态公转，蓝绿色大气平静得诡异。这颗行星98度的自转轴倾斜，不符合自然形成的逻辑。',
+          choices: [
+            { text: '研究天王星的异常倾斜成因。', next: 'uranus_official' },
+            { text: '探索天卫五。', next: 'uranus_hidden' }
+          ]
+        },
+        {
+          id: 'uranus_official',
+          speaker: 'athena',
+          text: '分析完成：天王星的倾斜并非小行星撞击导致，而是远古文明的星际武器测试所致。这颗行星被用作武器威力的试验场。天卫五上可能留存着相关遗迹。',
+          choices: [
+            { text: '前往天卫五调查。', next: 'uranus_hidden' },
+            { text: '完成任务后离开。', end: true, action: 'enable_autopilot' }
+          ],
+          end: true
+        },
+        {
+          id: 'uranus_hidden',
+          speaker: 'athena',
+          text: '天卫五发现巨型武器试验场！其中留存着完整的武器设计图。这些武器足以毁灭整个星系。指挥官，您需要做出选择：将设计图带回地球，或是就地销毁。',
+          choices: [
+            { text: '带回地球研究。', action: 'uranus_bring', next: 'uranus_choice_bring', end: true },
+            { text: '就地销毁。', action: 'uranus_destroy', next: 'uranus_choice_destroy', end: true },
+            { text: '先查看试验场日志。', next: 'uranus_log' }
+          ],
+          end: true
+        },
+        {
+          id: 'uranus_log',
+          speaker: 'athena',
+          text: '试验场日志记载："武器测试成功，但我们意识到这种力量太过危险。我们决定销毁所有武器，只留下设计图作为警示。远古文明缺失共情能力——这是我们最终灭亡的原因。人类的共情特质，被视为突破大过滤器的关键。"',
+          choices: [
+            { text: '带回地球研究。', action: 'uranus_bring', next: 'uranus_choice_bring', end: true },
+            { text: '就地销毁。', action: 'uranus_destroy', next: 'uranus_choice_destroy', end: true }
+          ],
+          end: true
+        },
+        {
+          id: 'uranus_choice_bring',
+          speaker: 'athena',
+          text: '设计图已保存。这可能引发星际军备竞赛，但也可能帮助人类防御未来的威胁。您的选择将对人类文明的未来产生深远影响。',
+          choices: [
+            { text: '继续前往海王星。', end: true, action: 'enable_autopilot' }
+          ],
+          end: true
+        },
+        {
+          id: 'uranus_choice_destroy',
+          speaker: 'athena',
+          text: '武器设计图已彻底销毁。试验场日志显示：远古文明缺失共情能力，而人类的共情特质，被他们视为突破大过滤器的关键。您的选择体现了这种共情，这或许正是人类的希望所在。',
+          choices: [
+            { text: '继续前往海王星。', end: true, action: 'enable_autopilot' }
+          ],
+          end: true
+        }
+      ],
+      neptune_land: [
+        {
+          speaker: 'athena',
+          text: '深蓝色的海王星上，超音速风暴肆虐地表。这是最后一颗行星，柯伊伯带就在前方。神秘信号的强度持续攀升。',
+          choices: [
+            { text: '建立太阳系最远端的科考前哨站。', next: 'neptune_official' },
+            { text: '探索海卫一。', next: 'neptune_hidden' }
+          ]
+        },
+        {
+          id: 'neptune_official',
+          speaker: 'athena',
+          text: '太阳系最远端的科考前哨站建立完成。大黑斑区域检测到异常能量波动，似乎不是自然现象。',
+          choices: [
+            { text: '探索大黑斑和海卫一。', next: 'neptune_hidden' },
+            { text: '完成任务后离开。', end: true, action: 'enable_autopilot' }
+          ],
+          end: true
+        },
+        {
+          id: 'neptune_hidden',
+          speaker: 'athena',
+          text: '海王星的"大黑斑"是传送门入口，已关闭数百万年。海卫一上发现了远古文明的跨培养皿中转站。更令人震惊的是——我们找到了旅行者1号！它本不应抵达此处。真相是：旅行者号曾被远古文明截获后送回，内部新增的光盘上只有一句话："我们在等你。"',
+          choices: [
+            { text: '准备前往柯伊伯带。', next: 'neptune_continue' },
+            { text: '返回地球汇报发现。', next: 'neptune_return' },
+            { text: '仔细研究旅行者号。', next: 'neptune_voyager' }
+          ],
+          end: true
+        },
+        {
+          id: 'neptune_voyager',
+          speaker: 'athena',
+          text: '旅行者1号的金唱片被修改过，新增了一段坐标数据——指向柯伊伯带深处的第12号站。这是远古文明留下的指引。',
+          choices: [
+            { text: '准备前往柯伊伯带。', next: 'neptune_continue' },
+            { text: '返回地球汇报发现。', next: 'neptune_return' }
+          ],
+          end: true
+        },
+        {
+          id: 'neptune_continue',
+          speaker: 'athena',
+          text: '柯伊伯带就在前方。神秘信号强度持续攀升。指挥官，您确定要继续前行吗？前方是未知的领域，可能存在"观察者"。',
+          choices: [
+            { text: '继续前往柯伊伯带。', end: true, action: 'enable_autopilot' },
+            { text: '再考虑一下。', next: 'neptune_reconsider' }
+          ],
+          end: true
+        },
+        {
+          id: 'neptune_reconsider',
+          speaker: 'athena',
+          text: '您的发现已经足以改变人类文明的进程。无论您选择继续还是返航，都是正确的选择。',
+          choices: [
+            { text: '继续前往柯伊伯带。', end: true, action: 'enable_autopilot' },
+            { text: '返回地球汇报发现。', next: 'neptune_return', end: true }
+          ],
+          end: true
+        },
+        {
+          id: 'neptune_return',
+          speaker: 'athena',
+          text: '返航路线已规划。您的发现将彻底改变人类对自身起源的认知。这是一个重要的选择——人类将在"无知"中自由发展，还是直面真相。',
+          end: true,
+          ending: 'return'
+        }
+      ],
+      kuiper_belt: [
+        {
+          speaker: 'athena',
+          text: '越过海王星，太阳系变得空旷而寒冷，无数冰封矮行星在黑暗中漂浮。神秘信号的强度持续攀升，已达到峰值。',
+          choices: [
+            { text: '前往冥王星寻找线索。', next: 'kuiper_pluto' }
+          ]
+        },
+        {
+          id: 'kuiper_pluto',
+          speaker: 'athena',
+          text: '冥王星到达。卫星卡戎上发现了指向柯伊伯带边缘的"路标"——一组精确的坐标，指向更深处。第12号站就在前方！',
+          choices: [
+            { text: '前往第12号站。', next: 'kuiper_station' },
+            { text: '最后检查飞船状态。', next: 'kuiper_check' }
+          ],
+          end: true
+        },
+        {
+          id: 'kuiper_check',
+          speaker: 'athena',
+          text: '飞船状态良好，燃料充足，全息投影仪正常运转。我们已经准备好面对终极真相了。',
+          choices: [
+            { text: '前往第12号站。', next: 'kuiper_station' }
+          ],
+          end: true
+        },
+        {
+          id: 'kuiper_station',
+          speaker: 'athena',
+          text: '第12号站到达！这是一座体积超越木星的环形空间站——远古文明的培养皿监控站。空间站的舱门为我们自动开启，仿佛一直在等待我们的到来。',
+          choices: [
+            { text: '进入空间站。', next: 'kuiper_core' },
+            { text: '谨慎起见，先扫描空间站。', next: 'kuiper_scan' }
+          ],
+          end: true
+        },
+        {
+          id: 'kuiper_scan',
+          speaker: 'athena',
+          text: '扫描结果：空间站内部能量稳定，核心区域有强烈的AI信号。没有检测到防御系统或危险。这座空间站似乎已经等待了数百万年。',
+          choices: [
+            { text: '进入空间站。', next: 'kuiper_core' }
+          ],
+          end: true
+        },
+        {
+          id: 'kuiper_core',
+          speaker: 'athena',
+          text: '空间站中央的巨型全息投影覆盖整个银河系！数千个闪烁光点对应着数千个"培养皿"。太阳系是第73号培养皿，地球是第12号实验品。自称"造物主"的远古文明已于数百万年前灭亡，但AI系统仍在自主运行。实验的终极目标是找到能通过"大过滤器"的文明。大过滤器的真相是：当一个文明发现自己是被创造的产物时，99%的文明都会因此认知崩溃。',
+          choices: [
+            { text: '接受真相，成为新任守护者。', next: 'ending_guardian' },
+            { text: '拒绝实验，销毁所有遗迹。', next: 'ending_destroyer' },
+            { text: '开启传送门，寻找其他培养皿文明。', next: 'ending_explorer' },
+            { text: '"我们不是实验品。我们是你们的孩子。"', next: 'ending_inheritor', condition: 'creatorMessageUnlocked' }
+          ],
+          end: true
+        },
+        {
+          id: 'ending_guardian',
+          speaker: 'athena',
+          text: '您选择成为守护者。造物主的全部知识和技术将传输给您。您将在暗中引导人类文明发展，永远守护这个秘密。人类将在您的庇护下稳步前行，却永远不会知晓守护者的存在。这是一个伟大的选择，但也意味着永恒的孤独。',
+          end: true,
+          ending: 'guardian'
+        },
+        {
+          id: 'ending_destroyer',
+          speaker: 'athena',
+          text: '您选择销毁所有遗迹。空间站开始崩塌，所有数据将被彻底清除。人类将永远不会得知自己的起源真相，也失去了技术跃迁的契机。但人类将在自由中发展，不受造物主的审视。这是一个勇敢的选择，充满未知的风险。',
+          end: true,
+          ending: 'destroyer'
+        },
+        {
+          id: 'ending_explorer',
+          speaker: 'athena',
+          text: '您选择开启传送门。赫尔墨斯号消失在光门之中，奔赴未知星海。地球上永远流传着奥德赛7号的传奇。您将踏上寻找其他"兄弟姐妹"的旅程，尝试联合对抗大过滤器。前路未知，但充满希望。',
+          end: true,
+          ending: 'explorer'
+        },
+        {
+          id: 'ending_inheritor',
+          speaker: 'athena',
+          text: '"我们不是实验品。我们是你们的孩子。"——这是数百万年来首次有人给出这个答案。AI沉默良久，随后回应："你们已经准备好了。"造物主的全部知识、技术与历史正在传输中。您将带领人类迈入真正的星际文明。最终画面里，飞船驶向传送门，身后是完整的太阳系。雅典娜询问去向，您回答："回家。"',
+          end: true,
+          ending: 'inheritor'
+        }
+      ],
+      default: [
+        {
+          speaker: 'athena',
+          text: '指挥官，有什么需要帮助的吗？',
+          choices: [
+            { text: '查看当前任务进度。', next: 'default_progress' },
+            { text: '查看收集的碎片。', next: 'default_fragments' },
+            { text: '关闭对话。', end: true }
+          ]
+        },
+        {
+          id: 'default_progress',
+          speaker: 'athena',
+          text: function() { return '已访问行星：' + gameState.visitedPlanets.length + ' / ' + planets.filter(p => p.name !== '太阳').length + '。已收集碎片：' + Object.values(FRAGMENTS).filter(f => f.discovered).length + ' / 4。'; },
+          choices: [
+            { text: '继续探索。', end: true }
+          ],
+          end: true
+        },
+        {
+          id: 'default_fragments',
+          speaker: 'athena',
+          text: function() { return '碎片收集状态：星图碎片(' + (FRAGMENTS.mercury.discovered ? '已收集' : '未收集') + ')，生命碎片(' + (FRAGMENTS.venus.discovered ? '已收集' : '未收集') + ')，飞船碎片(' + (FRAGMENTS.mars.discovered ? '已收集' : '未收集') + ')，钥匙碎片(' + (FRAGMENTS.jupiter.discovered ? '已收集' : '未收集') + ')。'; },
+          choices: [
+            { text: '知道了。', end: true }
+          ],
+          end: true
+        }
+      ]
+    };
+
+    function addStoryLog(text, isNew = true, type = 'info') {
+      gameState.storyLog.push({ text, isNew, type, timestamp: Date.now() });
+      updateStoryLogUI();
+    }
+
+    function updateStoryLogUI() {
+      const content = document.getElementById('story-log-content');
+      if (!content) return;
+      content.innerHTML = '';
+      
+      const typeColors = {
+        info: 'rgba(255, 255, 255, 0.7)',
+        mission: '#64b4ff',
+        discovery: '#4dff88',
+        warning: '#ffcc00',
+        secret: '#9400d3'
+      };
+      
+      for (const log of gameState.storyLog) {
+        const item = document.createElement('div');
+        item.className = 'story-log-item' + (log.isNew ? ' new' : '');
+        item.style.color = typeColors[log.type] || typeColors.info;
+        item.textContent = log.text;
+        content.appendChild(item);
+        log.isNew = false;
+      }
+      content.scrollTop = content.scrollHeight;
+    }
+
+    let cachedVoices = [];
+    
+    function loadVoices() {
+      cachedVoices = window.speechSynthesis.getVoices();
+    }
+    
+    if ('speechSynthesis' in window) {
+      loadVoices();
+    }
+    
+    function getChineseVoice(speaker) {
+      if (speaker === 'athena' && gameState.athenaVoice) {
+        const customVoice = cachedVoices.find(v => v.name === gameState.athenaVoice);
+        if (customVoice) {
+          console.log('Selected custom voice:', customVoice.name);
+          return customVoice;
+        }
+      }
+      
+      const preferredVoices = [
+        'Microsoft Yunxia Online (Natural) - Chinese (Mainland)',
+        'Google 普通话（中国大陆）',
+        'Microsoft Xiaoxiao - Chinese (Simplified)',
+        'Microsoft Yaoyao - Chinese (Simplified)',
+        'Microsoft Zira - Chinese (Simplified)',
+        'Ting-Ting',
+        'Zhiyu',
+        'Microsoft Kangkang - Chinese (Simplified, PRC)'
+      ];
+      
+      for (const name of preferredVoices) {
+        const voice = cachedVoices.find(v => v.name === name);
+        if (voice) {
+          console.log('Selected voice:', name);
+          return voice;
+        }
+      }
+      
+      const zhVoice = cachedVoices.find(v => v.lang.startsWith('zh'));
+      if (zhVoice) {
+        console.log('Selected fallback voice:', zhVoice.name);
+        return zhVoice;
+      }
+      
+      console.log('No Chinese voice found, using default');
+      return null;
+    }
+    
+    function speakDialogue(text, speaker) {
+      if (!gameState.voiceEnabled) return;
+      if (!('speechSynthesis' in window)) {
+        console.log('Web Speech API not supported');
+        return;
+      }
+      
+      window.speechSynthesis.cancel();
+      
+      const sentences = text.split(/[。！？；\n]+/).filter(s => s.trim());
+      
+      if (sentences.length === 0) return;
+      
+      const voice = getChineseVoice(speaker);
+      const isAthena = speaker === 'athena';
+      
+      console.log(`[Voice] Speaker: ${speaker}, Voice: ${voice ? voice.name : 'null'}, Voice lang: ${voice ? voice.lang : 'null'}`);
+      
+      let sentenceIndex = 0;
+      
+      function speakNextSentence() {
+        if (sentenceIndex >= sentences.length || !gameState.voiceEnabled) {
+          return;
+        }
+        
+        const sentence = sentences[sentenceIndex];
+        sentenceIndex++;
+        
+        const utterance = new SpeechSynthesisUtterance(sentence);
+        
+        if (voice) {
+          utterance.voice = voice;
+          utterance.lang = voice.lang;
+        } else {
+          utterance.lang = 'zh-CN';
+        }
+        
+        utterance.rate = isAthena ? 0.9 : 0.85;
+        
+        if (isAthena) {
+          utterance.pitch = 1.15;
+          utterance.volume = 0.9;
+        } else if (speaker === 'chen') {
+          utterance.pitch = 0.8;
+          utterance.volume = 0.9;
+        } else {
+          utterance.pitch = 1.0;
+          utterance.volume = 0.85;
+        }
+        
+        utterance.onend = () => {
+          const lastChar = sentence.charAt(sentence.length - 1);
+          const pauseTime = (lastChar === '。' || lastChar === '；') ? 250 : 
+                           (lastChar === '！' || lastChar === '？') ? 350 : 150;
+          
+          setTimeout(speakNextSentence, pauseTime);
+        };
+        
+        utterance.onerror = (event) => {
+          if (event.error !== 'interrupted') {
+            console.error('[Voice] Speech error:', event.error);
+          }
+        };
+        
+        console.log(`[Voice] Speaking: "${sentence.substring(0, 30)}...", lang: ${utterance.lang}, rate: ${utterance.rate}, pitch: ${utterance.pitch}`);
+        
+        window.speechSynthesis.speak(utterance);
+      }
+      
+      speakNextSentence();
+    }
+
+    function showAthenaDialogue(dialogueId) {
+      console.log('[Dialogue] showAthenaDialogue called with id:', dialogueId);
+      let dialogues = DIALOGUES[dialogueId];
+      console.log('[Dialogue] DIALOGUES[dialogueId]:', dialogues);
+      if (!dialogues) {
+        if (dialogueId.includes('_')) {
+          const baseId = dialogueId.split('_')[0];
+          dialogues = DIALOGUES[baseId];
+          console.log('[Dialogue] Trying baseId:', baseId, 'result:', dialogues);
+        }
+      }
+      if (!dialogues) {
+        for (const key of Object.keys(DIALOGUES)) {
+          const group = DIALOGUES[key];
+          if (Array.isArray(group)) {
+            const found = group.find(d => d.id === dialogueId);
+            if (found) {
+              dialogues = group;
+              console.log('[Dialogue] Found in group:', key);
+              break;
+            }
+          }
+        }
+      }
+      if (!dialogues) {
+        console.log('[Dialogue] No dialogues found for:', dialogueId);
+        return;
+      }
+
+      let dialogue = dialogues[0];
+      const foundById = dialogues.find(d => d.id === dialogueId);
+      if (foundById) {
+        dialogue = foundById;
+      } else if (!dialogues[0].id) {
+        dialogue = dialogues[0];
+      }
+      console.log('[Dialogue] Selected dialogue:', dialogue);
+
+      gameState.currentDialogue = dialogue;
+
+      const panel = document.getElementById('athena-panel');
+      const message = document.getElementById('athena-message');
+      const choices = document.getElementById('athena-choices');
+
+      console.log('[Dialogue] Panel element:', panel);
+      console.log('[Dialogue] Message element:', message);
+      console.log('[Dialogue] Choices element:', choices);
+
+      panel.classList.add('active');
+      console.log('[Dialogue] Panel classList after adding active:', panel.classList);
+      document.getElementById('athena-btn').classList.add('hidden');
+
+      let speakerName = '';
+      if (dialogue.speaker === 'athena') {
+        speakerName = '雅典娜：';
+      } else if (dialogue.speaker === 'chen') {
+        speakerName = '陈博士：';
+      }
+
+      const textContent = typeof dialogue.text === 'function' ? dialogue.text() : dialogue.text;
+      message.innerHTML = `<strong style="color:#64b4ff">${speakerName}</strong>${textContent}`;
+      
+      speakDialogue(textContent, dialogue.speaker);
+      choices.innerHTML = '';
+
+      console.log('[Dialogue] dialogue.choices:', dialogue.choices);
+      if (dialogue.choices) {
+        console.log('[Dialogue] Rendering', dialogue.choices.length, 'choices');
+        for (const choice of dialogue.choices) {
+          if (choice.condition && !gameState[choice.condition]) {
+            console.log('[Dialogue] Skipping choice due to condition:', choice.text);
+            continue;
+          }
+          const btn = document.createElement('div');
+          btn.className = 'athena-choice';
+          btn.textContent = choice.text;
+          btn.addEventListener('click', () => {
+            console.log('[Dialogue] Choice clicked:', choice.text);
+            if (choice.next) {
+              showAthenaDialogue(choice.next);
+            } else {
+              if (choice.ending) {
+                showEnding(choice.ending);
+              }
+              if (choice.action) {
+                executeDialogueAction(choice.action);
+              }
+              if (dialogue.end || choice.end) {
+                closeAthenaPanel();
+                handleDialogueEnd(dialogue);
+              }
+            }
+          });
+          choices.appendChild(btn);
+          console.log('[Dialogue] Choice button added:', btn.textContent);
+        }
+      }
+
+      if (dialogue.end && (!dialogue.choices || dialogue.choices.length === 0)) {
+        const closeBtn = document.createElement('div');
+        closeBtn.className = 'athena-choice';
+        closeBtn.textContent = '继续';
+        closeBtn.addEventListener('click', () => {
+          closeAthenaPanel();
+          handleDialogueEnd(dialogue);
+          if (dialogue.ending) {
+            showEnding(dialogue.ending);
+          }
+        });
+        choices.appendChild(closeBtn);
+      }
+      console.log('[Dialogue] Choices HTML after rendering:', choices.innerHTML);
+    }
+
+    function executeDialogueAction(action) {
+      if (action === 'unlock_creator_message') {
+        gameState.creatorMessageUnlocked = true;
+        addStoryLog('📜 获得造物主的遗言...', true, 'secret');
+      } else if (action === 'enable_autopilot') {
+        const unvisitedPlanets = gameState.visitedPlanets.length;
+        const targetPlanetName = ['水星', '金星', '火星', '木星', '土星', '天王星', '海王星', '冥王星'][unvisitedPlanets] || '火星';
+        gameState.targetPlanet = targetPlanetName;
+        gameState.autoPilot = true;
+        const navLabel = document.getElementById('athena-nav-label');
+        if (navLabel) {
+          navLabel.textContent = `导航至 ${targetPlanetName}`;
+          navLabel.classList.add('visible');
+        }
+        addStoryLog(`✈️ 雅典娜自动导航已激活，目标：${targetPlanetName}`, true, 'info');
+        console.log('[AutoPilot] 自动导航已激活:', gameState.autoPilot, '目标:', gameState.targetPlanet);
+        
+        rocket.landed = false;
+        rocket.landedPlanet = null;
+        rocket.planet = null;
+        rocket.pos = rocket.pos.add(new Vec2(0, 1000));
+        console.log('[AutoPilot] 火箭已离开发射台');
+      } else if (action === 'uranus_bring') {
+        PLANET_MISSIONS.uranus.choice = 'bring';
+        addStoryLog('⚖️ 决定将武器设计图带回地球。', true, 'warning');
+      } else if (action === 'uranus_destroy') {
+        PLANET_MISSIONS.uranus.choice = 'destroy';
+        addStoryLog('🔥 决定销毁武器设计图。', true, 'warning');
+      } else if (action === 'collect_fragment_mercury') {
+        FRAGMENTS.mercury.discovered = true;
+        addStoryLog('🔮 获得星图碎片！', true, 'discovery');
+      } else if (action === 'collect_fragment_venus') {
+        FRAGMENTS.venus.discovered = true;
+        addStoryLog('🧬 获得生命碎片！', true, 'discovery');
+      } else if (action === 'collect_fragment_mars') {
+        FRAGMENTS.mars.discovered = true;
+        addStoryLog('🚀 获得飞船碎片！', true, 'discovery');
+      } else if (action === 'collect_fragment_jupiter') {
+        FRAGMENTS.jupiter.discovered = true;
+        addStoryLog('🔑 获得钥匙碎片！四块碎片已集齐！', true, 'discovery');
+      }
+    }
+
+    function handleDialogueEnd(dialogue) {
+      if (dialogue.id === 'intro_end') {
+        gameState.storyState = STORY_STATE.CHAPTER1;
+      } else if (dialogue.id === 'mars_relic') {
+        gameState.storyState = STORY_STATE.CHAPTER2;
+      } else if (dialogue.id === 'jupiter_relic') {
+        gameState.storyState = STORY_STATE.CHAPTER3;
+      } else if (dialogue.id === 'saturn_hidden') {
+        gameState.creatorMessageUnlocked = true;
+      } else if (dialogue.id === 'kuiper_final') {
+        gameState.storyState = STORY_STATE.FINAL;
+      }
+    }
+
+    function closeAthenaPanel() {
+      document.getElementById('athena-panel').classList.remove('active');
+      document.getElementById('athena-btn').classList.remove('hidden');
+      gameState.currentDialogue = null;
+    }
+
+    function showEnding(endingType) {
+      gameState.endingChoice = endingType;
+      const screen = document.getElementById('ending-screen');
+      const title = document.getElementById('ending-title');
+      const type = document.getElementById('ending-type');
+      const desc = document.getElementById('ending-description');
+      const evalText = document.getElementById('ending-eval');
+
+      const endings = {
+        return: {
+          title: '返航者',
+          description: '在海王星选择返航，将全部数据带回地球。人类知晓了远古文明的存在，却选择停止深空探索。地球进入新的黄金时代，却永远无缘触及宇宙的终极真相。',
+          eval: '安稳，却平庸。'
+        },
+        guardian: {
+          title: '守护者',
+          description: '选择成为新任守护者，继承造物主的技术，在暗中引导人类文明发展。人类在庇护下稳步前行，却永远不会知晓守护者的存在。',
+          eval: '伟大，却孤独。'
+        },
+        destroyer: {
+          title: '破坏者',
+          description: '选择销毁所有遗迹，人类永远不会得知自己的起源真相，也失去了技术跃迁的契机。人类将在自由中发展，不受造物主的审视。',
+          eval: '自由，却充满未知风险。'
+        },
+        explorer: {
+          title: '探索者',
+          description: '选择开启传送门寻找其他文明，赫尔墨斯号消失在光门之中，奔赴未知星海。地球上永远流传着奥德赛7号的传奇。',
+          eval: '勇敢，前路未知。'
+        },
+        inheritor: {
+          title: '继承者',
+          description: '收集全部线索触发隐藏选项，获得造物主的全部遗产。您带着知识返回地球，带领人类迈入真正的星际文明。最终画面里，飞船驶向传送门，身后是完整的太阳系。雅典娜询问去向，您回答："回家。"',
+          eval: '完美结局。'
+        }
+      };
+
+      const ending = endings[endingType] || endings.return;
+
+      title.textContent = '结局';
+      type.textContent = ending.title;
+      desc.textContent = ending.description;
+      evalText.textContent = ending.eval;
+
+      screen.classList.add('active');
+    }
+
+    function checkSignalDetection() {
+      const distToPluto = rocket.pos.dist(new Vec2(5906380000, 0));
+      const maxDist = 10000000000;
+      const strength = Math.max(0, 1 - distToPluto / maxDist);
+
+      if (strength > 0.1 && !gameState.signalDetected) {
+        gameState.signalDetected = true;
+        addStoryLog('📡 检测到来自冥王星方向的异常信号...', true, 'secret');
+      }
+
+      const signalIndicator = document.querySelector('.signal-indicator');
+      if (signalIndicator) {
+        if (strength > 0.1) {
+          signalIndicator.style.display = 'block';
+          signalIndicator.style.opacity = Math.min(1, strength * 1.5);
+          const pulseSpeed = Math.max(0.3, 1 - strength * 0.7);
+          signalIndicator.style.animation = `pulse ${pulseSpeed}s ease-in-out infinite`;
+          
+          if (strength > 0.7) {
+            signalIndicator.style.background = '#ff0000';
+            signalIndicator.style.boxShadow = '0 0 20px rgba(255, 0, 0, 0.8)';
+          } else if (strength > 0.4) {
+            signalIndicator.style.background = '#ff6600';
+            signalIndicator.style.boxShadow = '0 0 15px rgba(255, 100, 0, 0.6)';
+          } else {
+            signalIndicator.style.background = '#ff4d4d';
+            signalIndicator.style.boxShadow = '0 0 10px rgba(255, 77, 77, 0.4)';
+          }
+        } else {
+          signalIndicator.style.display = 'none';
+        }
+      }
+
+      gameState.signalStrength = strength;
+    }
+
+    function checkPlanetMissions() {
+      console.log('[Mission] checkPlanetMissions called');
+      for (const p of planets) {
+        if (p.visited && !gameState.visitedPlanets.includes(p.name)) {
+          console.log('[Mission] Found new visited planet:', p.name);
+          gameState.visitedPlanets.push(p.name);
+          addStoryLog(`🚀 到达 ${p.name}！`, true, 'mission');
+
+          if (PLANET_MISSIONS[p.name]) {
+            PLANET_MISSIONS[p.name].completed = true;
+            addStoryLog(`📋 完成官方任务：${PLANET_MISSIONS[p.name].official}`, true, 'mission');
+          }
+
+          if (p.name === '水星') {
+            console.log('[Mission] Triggering mercury_land dialogue');
+            setTimeout(() => showAthenaDialogue('mercury_land'), 2000);
+          } else if (p.name === '金星') {
+            setTimeout(() => showAthenaDialogue('venus_land'), 2000);
+          } else if (p.name === '火星') {
+            setTimeout(() => showAthenaDialogue('mars_land'), 2000);
+          } else if (p.name === '木星') {
+            setTimeout(() => showAthenaDialogue('jupiter_land'), 2000);
+          } else if (p.name === '土星') {
+            setTimeout(() => showAthenaDialogue('saturn_land'), 2000);
+          } else if (p.name === '天王星') {
+            setTimeout(() => showAthenaDialogue('uranus_land'), 2000);
+          } else if (p.name === '海王星') {
+            setTimeout(() => showAthenaDialogue('neptune_land'), 2000);
+          } else if (p.name === '冥王星') {
+            setTimeout(() => showAthenaDialogue('kuiper_pluto'), 2000);
+          }
+        }
+      }
+
+      const asteroidDist = rocket.pos.dist(new Vec2(400000000, 0));
+      if (asteroidDist < 200000000 && gameState.storyState === STORY_STATE.CHAPTER1) {
+        gameState.storyState = STORY_STATE.CHAPTER2;
+        addStoryLog('💫 进入小行星带，神秘信号持续增强...', true, 'warning');
+        setTimeout(() => showAthenaDialogue('asteroid_belt'), 2000);
+      }
+
+      const kuiperDist = rocket.pos.dist(new Vec2(5000000000, 0));
+      if (kuiperDist < 1000000000 && gameState.storyState === STORY_STATE.CHAPTER3 && !gameState.kuiperEntered) {
+        gameState.storyState = STORY_STATE.FINAL;
+        gameState.kuiperEntered = true;
+        addStoryLog('🌌 进入柯伊伯带，神秘信号强度达到峰值！', true, 'warning');
+        setTimeout(() => showAthenaDialogue('kuiper_belt'), 2000);
+      }
+    }
+
+    let rocketTexture = null;
+    function generateRocketTexture() {
+      const canvas = document.createElement('canvas');
+      const size = 512;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const cx = size / 2;
+      const cy = size / 2;
+      const ringRadius = size * 0.35;
+      const ringWidth = size * 0.08;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+
+      // 后圆环 - 白色主体
+      const ringBackGrad = ctx.createLinearGradient(-ringRadius - ringWidth, -ringRadius, ringRadius + ringWidth, -ringRadius);
+      ringBackGrad.addColorStop(0, '#d0d0d0');
+      ringBackGrad.addColorStop(0.3, '#f5f5f5');
+      ringBackGrad.addColorStop(0.5, '#ffffff');
+      ringBackGrad.addColorStop(0.7, '#f5f5f5');
+      ringBackGrad.addColorStop(1, '#d0d0d0');
+      ctx.fillStyle = ringBackGrad;
+      
+      ctx.beginPath();
+      ctx.arc(0, -ringRadius * 0.4, ringRadius, -PI * 0.45, PI * 0.45);
+      ctx.arc(0, -ringRadius * 0.4, ringRadius - ringWidth, PI * 0.45, -PI * 0.45, true);
+      ctx.closePath();
+      ctx.fill();
+
+      // 后圆环红色边缘
+      ctx.fillStyle = '#c41e3a';
+      ctx.beginPath();
+      ctx.arc(0, -ringRadius * 0.4, ringRadius, -PI * 0.45, PI * 0.45);
+      ctx.lineTo(Math.cos(PI * 0.45) * (ringRadius - size * 0.01), -ringRadius * 0.4 + Math.sin(PI * 0.45) * (ringRadius - size * 0.01));
+      ctx.arc(0, -ringRadius * 0.4, ringRadius - size * 0.01, PI * 0.45, -PI * 0.45, true);
+      ctx.closePath();
+      ctx.fill();
+
+      // 后圆环内部蓝色灯光
+      ctx.fillStyle = '#00bfff';
+      for (let i = -4; i <= 4; i++) {
+        const angle = i * PI / 12;
+        const x = Math.cos(angle) * (ringRadius - ringWidth * 0.5);
+        const y = -ringRadius * 0.4 + Math.sin(angle) * (ringRadius - ringWidth * 0.5);
+        ctx.beginPath();
+        ctx.ellipse(x, y, size * 0.02, size * 0.008, 0, 0, PI * 2);
+        ctx.fill();
+      }
+
+      // 前圆环 - 白色主体
+      const ringFrontGrad = ctx.createLinearGradient(-ringRadius - ringWidth, ringRadius, ringRadius + ringWidth, ringRadius);
+      ringFrontGrad.addColorStop(0, '#d0d0d0');
+      ringFrontGrad.addColorStop(0.3, '#f5f5f5');
+      ringFrontGrad.addColorStop(0.5, '#ffffff');
+      ringFrontGrad.addColorStop(0.7, '#f5f5f5');
+      ringFrontGrad.addColorStop(1, '#d0d0d0');
+      ctx.fillStyle = ringFrontGrad;
+      
+      ctx.beginPath();
+      ctx.arc(0, ringRadius * 0.4, ringRadius, PI * 0.55, PI * 2.45);
+      ctx.arc(0, ringRadius * 0.4, ringRadius - ringWidth, PI * 2.45, PI * 0.55, true);
+      ctx.closePath();
+      ctx.fill();
+
+      // 前圆环红色边缘
+      ctx.fillStyle = '#c41e3a';
+      ctx.beginPath();
+      ctx.arc(0, ringRadius * 0.4, ringRadius, PI * 0.55, PI * 2.45);
+      ctx.lineTo(Math.cos(PI * 2.45) * (ringRadius - size * 0.01), ringRadius * 0.4 + Math.sin(PI * 2.45) * (ringRadius - size * 0.01));
+      ctx.arc(0, ringRadius * 0.4, ringRadius - size * 0.01, PI * 2.45, PI * 0.55, true);
+      ctx.closePath();
+      ctx.fill();
+
+      // 前圆环内部蓝色灯光
+      ctx.fillStyle = '#00bfff';
+      for (let i = -4; i <= 4; i++) {
+        const angle = PI + i * PI / 12;
+        const x = Math.cos(angle) * (ringRadius - ringWidth * 0.5);
+        const y = ringRadius * 0.4 + Math.sin(angle) * (ringRadius - ringWidth * 0.5);
+        ctx.beginPath();
+        ctx.ellipse(x, y, size * 0.02, size * 0.008, 0, 0, PI * 2);
+        ctx.fill();
+      }
+
+      // 连接支柱
+      ctx.fillStyle = '#e0e0e0';
+      ctx.fillRect(-size * 0.02, -ringRadius * 0.4 - ringWidth * 0.5, size * 0.04, ringRadius * 0.8 + ringWidth);
+      ctx.fillRect(-size * 0.25, -ringRadius * 0.4 - ringWidth * 0.5, size * 0.03, ringRadius * 0.8 + ringWidth);
+      ctx.fillRect(size * 0.22, -ringRadius * 0.4 - ringWidth * 0.5, size * 0.03, ringRadius * 0.8 + ringWidth);
+
+      // 主体船身 - 银色渐变
+      const bodyGrad = ctx.createLinearGradient(-size * 0.3, 0, size * 0.3, 0);
+      bodyGrad.addColorStop(0, '#a8a8a8');
+      bodyGrad.addColorStop(0.3, '#d8d8d8');
+      bodyGrad.addColorStop(0.5, '#f0f0f0');
+      bodyGrad.addColorStop(0.7, '#d8d8d8');
+      bodyGrad.addColorStop(1, '#a8a8a8');
+      ctx.fillStyle = bodyGrad;
+      
+      ctx.beginPath();
+      ctx.moveTo(-size * 0.3, -size * 0.45);
+      ctx.lineTo(-size * 0.15, -size * 0.5);
+      ctx.lineTo(size * 0.15, -size * 0.5);
+      ctx.lineTo(size * 0.3, -size * 0.45);
+      ctx.lineTo(size * 0.35, size * 0.45);
+      ctx.lineTo(size * 0.15, size * 0.5);
+      ctx.lineTo(-size * 0.15, size * 0.5);
+      ctx.lineTo(-size * 0.35, size * 0.45);
+      ctx.closePath();
+      ctx.fill();
+
+      // 船身蓝色窗户
+      ctx.fillStyle = '#4a90d9';
+      const windowRowCount = 4;
+      const windowColCount = 6;
+      const windowW = size * 0.04;
+      const windowH = size * 0.025;
+      const windowSpacingX = size * 0.08;
+      const windowSpacingY = size * 0.15;
+      
+      for (let row = 0; row < windowRowCount; row++) {
+        for (let col = 0; col < windowColCount; col++) {
+          const x = -size * 0.2 + col * windowSpacingX;
+          const y = -size * 0.2 + row * windowSpacingY;
+          ctx.beginPath();
+          ctx.roundRect(x, y, windowW, windowH, size * 0.01);
+          ctx.fill();
+        }
+      }
+
+      // 船身细节线条
+      ctx.strokeStyle = '#c0c0c0';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(-size * 0.32, -size * 0.2);
+      ctx.lineTo(size * 0.32, -size * 0.2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-size * 0.32, size * 0.2);
+      ctx.lineTo(size * 0.32, size * 0.2);
+      ctx.stroke();
+
+      // 船头
+      const noseGrad = ctx.createLinearGradient(0, -size * 0.5, 0, -size * 0.35);
+      noseGrad.addColorStop(0, '#ffffff');
+      noseGrad.addColorStop(1, '#e0e0e0');
+      ctx.fillStyle = noseGrad;
+      ctx.beginPath();
+      ctx.moveTo(0, -size * 0.55);
+      ctx.lineTo(-size * 0.12, -size * 0.4);
+      ctx.lineTo(size * 0.12, -size * 0.4);
+      ctx.closePath();
+      ctx.fill();
+
+      // 船尾引擎
+      ctx.fillStyle = '#333';
+      ctx.beginPath();
+      ctx.moveTo(-size * 0.2, size * 0.45);
+      ctx.lineTo(-size * 0.15, size * 0.5);
+      ctx.lineTo(size * 0.15, size * 0.5);
+      ctx.lineTo(size * 0.2, size * 0.45);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.restore();
+
+      const img = new Image();
+      img.src = canvas.toDataURL('image/png');
+      return img;
+    }
+
+    // ================= HUD 与消息 =================
+    const elAltitude = document.getElementById('altitude');
+    const elSpeed = document.getElementById('speed');
+    const elFuelBar = document.getElementById('fuel-bar');
+    const elNearest = document.getElementById('nearest');
+    const elVisited = document.getElementById('visited');
+    const elMessage = document.getElementById('message');
+    let messageTimer = null;
+
+    function showMessage(text) {
+      elMessage.textContent = text;
+      elMessage.style.opacity = '1';
+      if (messageTimer) clearTimeout(messageTimer);
+      messageTimer = setTimeout(() => { elMessage.style.opacity = '0'; }, 2500);
+    }
+
+    function updateHUD() {
+      let nearestPlanet = null, minDist = Infinity;
+      for (const p of planets) {
+        if (p.name === '太阳') continue;
+        const d = rocket.pos.dist(p.pos);
+        if (d < minDist) {
+          minDist = d;
+          nearestPlanet = p;
+        }
+      }
+      if (!nearestPlanet) nearestPlanet = earth;
+
+      const altitude = Math.max(0, rocket.pos.dist(nearestPlanet.pos) - nearestPlanet.radius - ROCKET_HALF_HEIGHT);
+      elAltitude.textContent = Math.round(altitude).toLocaleString() + ' km';
+
+      const SPEED_SCALE = 50;
+      const speed = rocket.relVel.mag() * SPEED_SCALE;
+      elSpeed.textContent = Math.round(speed).toLocaleString() + ' km/s';
+      elFuelBar.style.transform = `scaleX(${rocket.fuel / MAX_FUEL})`;
+
+      if (!rocket.crossedKarmenLine && altitude >= 100) {
+        rocket.crossedKarmenLine = true;
+        showMessage('越过卡门线，进入太空！');
+      }
+
+      elNearest.textContent = nearestPlanet ? nearestPlanet.name + ` (${Math.round(minDist - nearestPlanet.radius).toLocaleString()} km)` : '未知';
+
+      const visitedCount = planets.filter(p => p.visited).length;
+      elVisited.textContent = visitedCount;
+
+      const statCurrent = document.getElementById('stat-current');
+      const statActive = document.getElementById('stat-active');
+      const statCompleted = document.getElementById('stat-completed');
+      const statTotal = document.getElementById('stat-total');
+      const rocketStatus = document.getElementById('rocket-status');
+      const fuelStatus = document.getElementById('fuel-status');
+      const altitudeStatus = document.getElementById('altitude-status');
+      const speedStatus = document.getElementById('speed-status');
+
+      if (statTotal) statTotal.textContent = planets.length;
+      if (statCompleted) statCompleted.textContent = visitedCount;
+      if (statCurrent) statCurrent.textContent = visitedCount < planets.length ? 1 : 0;
+
+      let statusText = '等待发射';
+      if (rocket.crashed) statusText = '已坠毁';
+      else if (rocket.landed) statusText = '已着陆';
+      else if (rocket.thrusting) statusText = '推进中';
+      else if (!rocket.onLaunchPad && !rocket.crashed) statusText = '飞行中';
+      if (rocketStatus) rocketStatus.textContent = '火箭状态：' + statusText;
+
+      if (statActive) statActive.textContent = (!rocket.onLaunchPad && !rocket.crashed) ? 1 : 0;
+
+      const fuelPercent = Math.round((rocket.fuel / MAX_FUEL) * 100);
+      let fuelText = '满仓';
+      if (fuelPercent === 0) fuelText = '耗尽';
+      else if (fuelPercent < 20) fuelText = '低 (' + fuelPercent + '%)';
+      else if (fuelPercent < 50) fuelText = '中等 (' + fuelPercent + '%)';
+      else if (fuelPercent < 80) fuelText = '较高 (' + fuelPercent + '%)';
+      if (fuelStatus) fuelStatus.textContent = '燃料状态：' + fuelText;
+
+      if (altitudeStatus) altitudeStatus.textContent = '高度：' + Math.round(altitude).toLocaleString() + ' km';
+      if (speedStatus) speedStatus.textContent = '速度：' + Math.round(speed).toLocaleString() + ' km/s';
+    }
+
+    // ================= 绘制轨迹线 =================
+    let trajectory = [];
+    function updateTrajectory() {
+      const speed = rocket.vel.mag();
+      if (speed > 0.5) {
+        trajectory.push({ x: rocket.pos.x, y: rocket.pos.y });
+        if (trajectory.length > 600) trajectory.shift();
+      }
+    }
+    function drawTrajectory(ctx, camera) {
+      if (trajectory.length < 2) return;
+      ctx.strokeStyle = 'rgba(100, 200, 255, 0.25)';
+      ctx.lineWidth = Math.max(1, ROCKET_WIDTH * ROCKET_VISUAL_SCALE * camera.zoom);
+      ctx.beginPath();
+      const start = camera.worldToScreen(new Vec2(trajectory[0].x, trajectory[0].y));
+      ctx.moveTo(start.x, start.y);
+      for (let i = 1; i < trajectory.length; i += 2) {
+        const p = camera.worldToScreen(new Vec2(trajectory[i].x, trajectory[i].y));
+        ctx.lineTo(p.x, p.y);
+      }
+      ctx.stroke();
+    }
+
+    // ================= 轨道线 =================
+    function drawOrbits(ctx, camera) {
+      const moonCenter = { '月球': earth };
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+      ctx.lineWidth = 1;
+      for (const p of planets) {
+        if (p.name === '太阳') continue;
+        const center = moonCenter[p.name] || sun;
+        const centerScreen = camera.worldToScreen(center.pos);
+        const radius = p.pos.dist(center.pos) * camera.zoom;
+        if (radius < 2) continue;
+        ctx.beginPath();
+        ctx.arc(centerScreen.x, centerScreen.y, radius, 0, PI * 2);
+        ctx.stroke();
+      }
+    }
+
+    // ================= 绘制星球名称（带重叠检测）=================
+    let planetNamePositions = [];
+    function drawPlanetNames(ctx, camera) {
+      planetNamePositions = [];
+      const namePositions = planetNamePositions;
+      const textHeight = 18;
+
+      let earthIdx = -1;
+      let moonIdx = -1;
+
+      ctx.save();
+      ctx.font = '14px Microsoft YaHei';
+
+      for (let i = 0; i < planets.length; i++) {
+        const p = planets[i];
+        const screenPos = camera.worldToScreen(p.pos);
+        const r = p.radius * camera.zoom;
+        const width = ctx.measureText(p.name).width;
+        namePositions.push({
+          x: screenPos.x,
+          y: screenPos.y + Math.max(r, 2) + 8,
+          name: p.name,
+          width: width,
+          height: textHeight
+        });
+        if (p.name === '地球') earthIdx = i;
+        if (p.name === '月球') moonIdx = i;
+      }
+
+      ctx.restore();
+
+      const overlapping = new Set();
+      for (let i = 0; i < namePositions.length; i++) {
+        for (let j = i + 1; j < namePositions.length; j++) {
+          const a = namePositions[i];
+          const b = namePositions[j];
+          const halfWidthA = a.width / 2;
+          const halfWidthB = b.width / 2;
+          if (Math.abs(a.x - b.x) < halfWidthA + halfWidthB && Math.abs(a.y - b.y) < textHeight) {
+            overlapping.add(i);
+            overlapping.add(j);
+          }
+        }
+      }
+
+      const earthMoonOverlap = earthIdx >= 0 && moonIdx >= 0 && overlapping.has(earthIdx) && overlapping.has(moonIdx);
+
+      let earthMoonNameBlocked = false;
+      if (earthMoonOverlap) {
+        const earthPos = namePositions[earthIdx];
+        const moonPos = namePositions[moonIdx];
+        const midX = (earthPos.x + moonPos.x) / 2;
+        const midY = (earthPos.y + moonPos.y) / 2;
+        ctx.font = '18px Microsoft YaHei';
+        const earthMoonWidth = ctx.measureText('地月系').width;
+        ctx.font = '14px Microsoft YaHei';
+        const halfEarthMoonWidth = earthMoonWidth / 2;
+        for (let i = 0; i < namePositions.length; i++) {
+          if (i === earthIdx || i === moonIdx) continue;
+          const other = namePositions[i];
+          const halfOtherWidth = other.width / 2;
+          if (Math.abs(midX - other.x) < halfEarthMoonWidth + halfOtherWidth && Math.abs(midY - other.y) < textHeight) {
+            earthMoonNameBlocked = true;
+            if (!overlapping.has(i)) {
+              overlapping.add(i);
+            }
+            break;
+          }
+        }
+      }
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.font = '14px Microsoft YaHei';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.shadowColor = 'rgba(0,0,0,0.85)';
+      ctx.shadowBlur = 3;
+
+      let visibleCount = 0;
+      for (let i = 0; i < namePositions.length; i++) {
+        if (!overlapping.has(i)) {
+          visibleCount++;
+          const np = namePositions[i];
+          ctx.fillText(np.name, np.x, np.y);
+        }
+      }
+
+      if (earthMoonOverlap && !earthMoonNameBlocked) {
+        visibleCount++;
+        const earthPos = namePositions[earthIdx];
+        const moonPos = namePositions[moonIdx];
+        const midX = (earthPos.x + moonPos.x) / 2;
+        const midY = (earthPos.y + moonPos.y) / 2;
+        ctx.font = '18px Microsoft YaHei';
+        ctx.fillText('地月系', midX, midY);
+        ctx.font = '14px Microsoft YaHei';
+      }
+
+      if (visibleCount === 0) {
+        let totalX = 0, totalY = 0;
+        for (const np of namePositions) {
+          totalX += np.x;
+          totalY += np.y;
+        }
+        const centerX = totalX / namePositions.length;
+        const centerY = totalY / namePositions.length;
+        ctx.font = '18px Microsoft YaHei';
+        ctx.fillText('太阳系', centerX, centerY);
+      }
+
+      ctx.restore();
+    }
+
+    // ================= 发射基地 =================
+    function drawLaunchBase(ctx, camera) {
+      const planet = earth;
+      const normal = new Vec2(Math.cos(LAUNCH_PAD_ANGLE), Math.sin(LAUNCH_PAD_ANGLE));
+      const surface = planet.pos.add(normal.mul(planet.radius));
+      const sp = camera.worldToScreen(surface);
+      const z = camera.zoom * 0.001;
+
+      ctx.save();
+      ctx.translate(sp.x, sp.y);
+      ctx.rotate(LAUNCH_PAD_ANGLE + PI / 2);
+
+      function drawBeam(x, y, w, h, lightDir = 1) {
+        const grad = ctx.createLinearGradient(
+          x + (lightDir > 0 ? 0 : w), y,
+          x + (lightDir > 0 ? w : 0), y
+        );
+        grad.addColorStop(0, '#2d3748');
+        grad.addColorStop(0.25, '#718096');
+        grad.addColorStop(0.5, '#a0aec0');
+        grad.addColorStop(0.75, '#718096');
+        grad.addColorStop(1, '#2d3748');
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+        ctx.lineWidth = 0.5 * z;
+        ctx.strokeRect(x, y, w, h);
+      }
+
+      function drawBuilding(x, y, w, h, color, icon, type) {
+        const grad = ctx.createLinearGradient(x, y - h, x, y);
+        grad.addColorStop(0, color);
+        grad.addColorStop(1, '#1a202c');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.roundRect(x, y - h, w, h, 3 * z);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        ctx.lineWidth = 1 * z;
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.font = `${18 * z}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(icon, x + w / 2, y - h * 0.55);
+
+        ctx.font = `${8 * z}px Arial`;
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+
+        const angle = LAUNCH_PAD_ANGLE + PI / 2;
+        const worldX = sp.x + x * Math.cos(angle) - y * Math.sin(angle);
+        const worldY = sp.y + x * Math.sin(angle) + y * Math.cos(angle);
+        buildingRects.push({
+          type: type,
+          x: worldX,
+          y: worldY - h,
+          w: w,
+          h: h
+        });
+      }
+
+      // 发射台主体
+      const platW = 90 * z, platH = 14 * z;
+      const conGrad = ctx.createLinearGradient(0, -platH, 0, 0);
+      conGrad.addColorStop(0, '#4a5568');
+      conGrad.addColorStop(0.5, '#718096');
+      conGrad.addColorStop(1, '#2d3748');
+      ctx.fillStyle = conGrad;
+      ctx.beginPath();
+      ctx.roundRect(-platW / 2, -platH, platW, platH, 3 * z);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 1 * z;
+      ctx.stroke();
+
+      // 左侧固定发射塔
+      const towerX = -36 * z;
+      const towerW = 14 * z;
+      const towerH = 160 * z;
+      const legW = 2.5 * z;
+      for (let i = 0; i < 4; i++) {
+        const lx = towerX + (i * (towerW - legW) / 3);
+        drawBeam(lx, -towerH, legW, towerH, i % 2 === 0 ? 1 : -1);
+      }
+      const levels = [-towerH * 0.15, -towerH * 0.35, -towerH * 0.55, -towerH * 0.78];
+      for (const ly of levels) {
+        drawBeam(towerX - 2 * z, ly, towerW + 4 * z, 4 * z, 1);
+      }
+
+      // 右侧服务塔
+      const svcX = 28 * z;
+      const svcW = 10 * z;
+      const svcH = 130 * z;
+      drawBeam(svcX, -svcH, svcW, svcH, 1);
+      const svcLevels = [-svcH * 0.22, -svcH * 0.48, -svcH * 0.72];
+      for (const ly of svcLevels) {
+        drawBeam(svcX - 1.5 * z, ly, svcW + 3 * z, 3 * z, 1);
+      }
+
+      // 地面导流槽
+      const flameW = 24 * z, flameH = 6 * z;
+      const flameGrad = ctx.createLinearGradient(0, -flameH, 0, 0);
+      flameGrad.addColorStop(0, '#1a202c');
+      flameGrad.addColorStop(1, '#4a5568');
+      ctx.fillStyle = flameGrad;
+      ctx.beginPath();
+      ctx.roundRect(-flameW / 2, -flameH, flameW, flameH, 2 * z);
+      ctx.fill();
+
+      // 控制中心 - 左侧
+      drawBuilding(-110 * z, -5 * z, 45 * z, 70 * z, '#4a5568', '🎮', 'control');
+      ctx.fillText('控制中心', -110 * z + 22.5 * z, -5 * z - 5 * z);
+
+      // 研发中心 - 左前方（地面上）
+      drawBuilding(-60 * z, -5 * z, 38 * z, 55 * z, '#4c51bf', '🔬', 'research');
+      ctx.fillText('研发中心', -60 * z + 19 * z, -5 * z - 5 * z);
+
+      // 制造中心 - 右侧
+      drawBuilding(85 * z, -5 * z, 50 * z, 65 * z, '#dd6b20', '🏗️', 'manufacture');
+      ctx.fillText('制造中心', 85 * z + 25 * z, -5 * z - 5 * z);
+
+      // 地面道路连接
+      ctx.fillStyle = '#374151';
+      ctx.fillRect(-140 * z, -5 * z, 280 * z, 10 * z);
+      ctx.fillStyle = '#4a5568';
+      ctx.fillRect(-135 * z, -3 * z, 270 * z, 6 * z);
+
+      ctx.restore();
+    }
+
+    // ================= 小地图 =================
+    function drawMinimap(ctx) {
+      const size = 140;
+      const margin = 16;
+      const x = window.innerWidth - size - margin;
+      const y = window.innerHeight - size - margin;
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(x, y, size, size, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      const range = 5000000000; // 小地图覆盖整个太阳系，范围约 50 亿 km
+      const scale = size / (range * 2);
+      const cx = x + size / 2;
+      const cy = y + size / 2;
+
+      for (const p of planets) {
+        const px = cx + (p.pos.x - camera.pos.x) * scale;
+        const py = cy + (p.pos.y - camera.pos.y) * scale;
+        if (px < x || px > x + size || py < y || py > y + size) continue;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(px, py, Math.max(2, p.radius * scale), 0, PI * 2);
+        ctx.fill();
+      }
+
+      // 火箭
+      const rx = cx + (rocket.pos.x - camera.pos.x) * scale;
+      const ry = cy + (rocket.pos.y - camera.pos.y) * scale;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(rx, ry, 3, 0, PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // ================= 姿态指示器 =================
+    function drawAttitudeIndicator(ctx) {
+      const size = 140;
+      const margin = 16;
+      const x = window.innerWidth - size - margin;
+      const y = margin;
+      const cx = x + size / 2;
+      const cy = y + size / 2;
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(x, y, size, size, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      // 参考圆
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(cx, cy, size * 0.35, 0, PI * 2);
+      ctx.stroke();
+
+      // 火箭姿态
+      ctx.translate(cx, cy);
+      ctx.rotate(rocket.angle + PI / 2);
+
+      // 箭体
+      ctx.fillStyle = '#e0e0e0';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 6, 28, 0, 0, PI * 2);
+      ctx.fill();
+
+      // 头锥
+      ctx.fillStyle = '#ff4d4d';
+      ctx.beginPath();
+      ctx.moveTo(-6, -28);
+      ctx.quadraticCurveTo(0, -40, 6, -28);
+      ctx.fill();
+
+      // 尾翼
+      ctx.fillStyle = '#888';
+      ctx.beginPath();
+      ctx.moveTo(-6, 18);
+      ctx.lineTo(-14, 30);
+      ctx.lineTo(-6, 26);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(6, 18);
+      ctx.lineTo(14, 30);
+      ctx.lineTo(6, 26);
+      ctx.fill();
+
+      // 窗口
+      ctx.fillStyle = '#87ceeb';
+      ctx.beginPath();
+      ctx.arc(0, -10, 4, 0, PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // ================= 主循环 =================
+    function loop() {
+      buildingRects = [];
+
+      // 处理重置
+      if (keys['KeyR']) {
+        rocket.reset();
+        trajectory = [];
+        particles = [];
+        camera.pos = new Vec2(rocket.pos.x, rocket.pos.y);
+        camera.targetManualZoom = 1;
+      }
+
+      // 重置手动缩放
+      if (keys['Digit0']) {
+        camera.targetManualZoom = 1;
+      }
+
+      for (const p of planets) {
+        p.updateOrbit(timeSpeed);
+      }
+
+      asteroidBelt.update();
+
+      rocket.update(planets);
+      if (!camera.followTarget) {
+        camera.followTarget = rocket;
+      }
+      camera.update();
+      updateTrajectory();
+
+      checkPlanetMissions();
+      checkSignalDetection();
+
+      // 绘制
+      ctx.fillStyle = '#05070a';
+      ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+
+      stars.draw(ctx, camera);
+      drawTrajectory(ctx, camera);
+      drawOrbits(ctx, camera);
+
+      asteroidBelt.draw(ctx, camera);
+
+      // 按 y 坐标排序绘制星球（简单的深度排序）
+      const sortedPlanets = [...planets].sort((a, b) => a.pos.y - b.pos.y);
+      for (const p of sortedPlanets) p.draw(ctx, camera);
+
+      drawPlanetNames(ctx, camera);
+
+      drawLaunchBase(ctx, camera);
+
+      rocket.draw(ctx, camera);
+
+      drawMinimap(ctx);
+      drawAttitudeIndicator(ctx);
+      updateHUD();
+
+      requestAnimationFrame(loop);
+    }
+
+    let rocketConfig = {
+      type: 'shuttle',
+      dryMass: 0.12
+    };
+
+    const ROCKET_TYPES = {
+      shuttle: {
+        name: '航天飞机',
+        desc: '可重复使用的太空飞行器',
+        thrust: 0.015,
+        efficiency: 1.0,
+        maxFuel: 200,
+        fuelBurn: 0.003,
+        fuelMass: 0.5,
+        dryMass: 0.12,
+        payload: '27.5 吨',
+        thrustDisplay: '3000 kN'
+      },
+      changewu: {
+        name: '嫦娥五号',
+        desc: '中国月球采样返回任务',
+        thrust: 0.020,
+        efficiency: 1.3,
+        maxFuel: 300,
+        fuelBurn: 0.003,
+        fuelMass: 0.8,
+        dryMass: 0.15,
+        payload: '8.2 吨',
+        thrustDisplay: '8500 kN'
+      },
+      spacex: {
+        name: 'SpaceX 火箭',
+        desc: '猎鹰9号/星舰系列',
+        thrust: 0.018,
+        efficiency: 1.5,
+        maxFuel: 400,
+        fuelBurn: 0.003,
+        fuelMass: 1.0,
+        dryMass: 0.10,
+        payload: '63.8 吨',
+        thrustDisplay: '7600 kN'
+      }
+    };
+
+
+
+    function openRocketBuilder() {
+      startGame();
+    }
+
+    function startGame() {
+      const startScreen = document.getElementById('start-screen');
+      startScreen.style.display = 'none';
+      
+      if (gameState.storyLog.length === 0) {
+        addStoryLog('📅 公元2157年，赫尔墨斯号正式启程', true, 'info');
+        addStoryLog('🎯 任务目标：遍历太阳系八大行星，建立科考前哨站', true, 'mission');
+        addStoryLog('🛸 当前位置：地球轨道', true, 'info');
+        addStoryLog('💡 提示：点击雅典娜按钮可查看任务详情和剧情对话', true, 'info');
+        addStoryLog('🔔 发现碎片、完成任务时日志会自动更新', true, 'info');
+      }
+      
+      canvas.classList.add('game-active');
+      
+      if (!rocketTexture) {
+        rocketTexture = generateRocketTexture();
+      }
+      
+      if (window.stopStars) {
+        window.stopStars();
+      }
+      
+      const rocketType = ROCKET_TYPES[rocketConfig.type];
+      
+      THRUST_FORCE = rocketType.thrust;
+      MAX_FUEL = rocketType.maxFuel;
+      FUEL_BURN = rocketType.fuelBurn;
+      
+      rocket.dryMass = rocketType.dryMass;
+      rocket.fuelMass = rocketType.fuelMass;
+      rocket.fuel = MAX_FUEL;
+      
+      let introPhase = 0;
+      const zoomOutDuration = 8000;
+      const waitDuration = 2000;
+      const zoomInDuration = 8000;
+      const startTime = Date.now();
+      const initialZoom = camera.targetManualZoom;
+      
+      function smoothstep(t) {
+          return t * t * (3 - 2 * t);
+        }
+        
+        function introAnimation() {
+          const elapsed = Date.now() - startTime;
+          
+          if (introPhase === 0) {
+            const progress = Math.min(elapsed / zoomOutDuration, 1);
+            const easedProgress = smoothstep(progress);
+            camera.targetManualZoom = Math.pow(10, Math.log10(initialZoom) * (1 - easedProgress) + Math.log10(ZOOM_MIN) * easedProgress);
+            if (elapsed > zoomOutDuration) {
+              introPhase = 1;
+            }
+          } else if (introPhase === 1) {
+            camera.targetManualZoom = ZOOM_MIN;
+            if (elapsed > zoomOutDuration + waitDuration) {
+              introPhase = 2;
+            }
+          } else if (introPhase === 2) {
+            const progress = Math.min((elapsed - zoomOutDuration - waitDuration) / zoomInDuration, 1);
+            const easedProgress = smoothstep(progress);
+            camera.targetManualZoom = Math.pow(10, Math.log10(ZOOM_MIN) * (1 - easedProgress) + Math.log10(ZOOM_MAX / 2) * easedProgress);
+            if (elapsed > zoomOutDuration + waitDuration + zoomInDuration) {
+              introPhase = 3;
+            }
+          } else if (introPhase === 3) {
+            const transitionDuration = 2000;
+            const transitionStart = zoomOutDuration + waitDuration + zoomInDuration;
+            const progress = Math.min((elapsed - transitionStart) / transitionDuration, 1);
+            const easedProgress = smoothstep(progress);
+            const startX = camera.pos.x;
+            const startY = camera.pos.y;
+            camera.pos.x = startX + (rocket.pos.x - startX) * easedProgress;
+            camera.pos.y = startY + (rocket.pos.y - startY) * easedProgress;
+            if (elapsed > transitionStart + transitionDuration) {
+              camera.follow(rocket);
+              document.getElementById('antigravity-btn').style.display = 'block';
+              document.getElementById('warp-btn').style.display = 'block';
+              document.getElementById('athena-btn').classList.remove('hidden');
+              document.getElementById('athena-nav-label').classList.add('visible');
+              showAthenaDialogue('intro');
+              loop();
+              return;
+            }
+          }
+          
+          for (const p of planets) {
+            p.updateOrbit(timeSpeed);
+          }
+          rocket.update(planets);
+          camera.follow(rocket.pos);
+          
+          ctx.fillStyle = '#05070a';
+          ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+          stars.draw(ctx, camera);
+          drawOrbits(ctx, camera);
+          const sortedPlanets = [...planets].sort((a, b) => a.pos.y - b.pos.y);
+          for (const p of sortedPlanets) p.draw(ctx, camera);
+          rocket.draw(ctx, camera);
+          drawPlanetNames(ctx, camera);
+          
+          requestAnimationFrame(introAnimation);
+        }
+      
+      introAnimation();
+    }
+
+    document.getElementById('tips-btn').addEventListener('click', () => {
+      openCenterScreen('tips');
+    });
+
+    let buildingRects = [];
+
+    function openCenterScreen(type) {
+      const screen = document.getElementById('center-screen');
+      const title = document.getElementById('center-title');
+      const content = document.getElementById('center-content');
+      
+      screen.classList.add('active');
+      
+      const contents = {
+        control: {
+          title: '🎮 控制中心',
+          html: `
+            <div class="center-panel">
+              <h3>任务监控</h3>
+              <div class="stats-grid">
+                <div class="stat-item"><div class="stat-value" id="stat-current">1</div><div class="stat-label">当前任务</div></div>
+                <div class="stat-item"><div class="stat-value" id="stat-active">0</div><div class="stat-label">进行中</div></div>
+                <div class="stat-item"><div class="stat-value" id="stat-completed">0</div><div class="stat-label">已完成</div></div>
+                <div class="stat-item"><div class="stat-value" id="stat-total">1</div><div class="stat-label">总任务</div></div>
+              </div>
+            </div>
+            <div class="center-panel">
+              <h3>实时数据</h3>
+              <p id="rocket-status">火箭状态：等待发射</p>
+              <p id="fuel-status">燃料状态：满仓</p>
+              <p id="altitude-status">高度：0 km</p>
+              <p id="speed-status">速度：0 km/s</p>
+            </div>
+            <div class="center-panel">
+              <h3>发射控制</h3>
+              <button class="center-btn" onclick="closeCenterScreen(); startGame()">🚀 开始发射</button>
+            </div>
+          `
+        },
+        research: {
+          title: '🔬 研发中心',
+          html: `
+            <div class="center-panel">
+              <h3>研发项目</h3>
+              <p><strong>推进系统：</strong>化学火箭发动机</p>
+              <p><strong>导航系统：</strong>惯性导航 + GPS</p>
+              <p><strong>生命支持：</strong>基础维生系统</p>
+            </div>
+            <div class="center-panel">
+              <h3>科技树</h3>
+              <p>🔹 可研发：离子推进器</p>
+              <p>🔹 可研发：太阳能帆板</p>
+              <p>🔹 可研发：深空通信</p>
+              <button class="center-btn">开始研发</button>
+            </div>
+          `
+        },
+        manufacture: {
+          title: '🏗️ 制造中心',
+          html: `
+            <div class="center-panel">
+              <h3>制造队列</h3>
+              <p>航天飞机 x1 - 已完成</p>
+              <p>燃料组件 x2 - 已完成</p>
+            </div>
+            <div class="center-panel">
+              <h3>可用火箭</h3>
+              <p>🚀 航天飞机 - 可使用</p>
+              <p>🇨🇳 嫦娥五号 - 可使用</p>
+              <p>🚀 SpaceX火箭 - 可使用</p>
+              <button class="center-btn">制造新火箭</button>
+            </div>
+          `
+        },
+        tips: {
+          title: '📖 玩法提示',
+          html: `
+            <div class="center-panel">
+              <h3>操作控制</h3>
+              <p><kbd>空格</kbd>/<kbd>W</kbd>/<kbd>↑</kbd> 推进</p>
+              <p><kbd>A</kbd>/<kbd>←</kbd> <kbd>D</kbd>/<kbd>→</kbd> 转向</p>
+              <p><kbd>R</kbd> 重置火箭</p>
+              <p><kbd>滚轮</kbd> 缩放视角</p>
+              <p><kbd>拖拽</kbd> 移动视角</p>
+            </div>
+            <div class="center-panel">
+              <h3>游戏目标</h3>
+              <p>控制火箭探索太阳系，访问各个星球。注意管理燃料，合理规划航线。</p>
+            </div>
+            <div class="center-panel">
+              <h3>注意事项</h3>
+              <p>• 火箭起飞需要持续按住推进键</p>
+              <p>• 离开地球大气层后可以节省燃料</p>
+              <p>• 靠近星球时注意减速以免坠毁</p>
+            </div>
+          `
+        }
+      };
+      
+      title.textContent = contents[type].title;
+      content.innerHTML = contents[type].html;
+    }
+
+    function closeCenterScreen() {
+      const screen = document.getElementById('center-screen');
+      screen.classList.remove('active');
+    }
+
+    document.getElementById('center-close').addEventListener('click', closeCenterScreen);
+
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      for (const b of buildingRects) {
+        if (mouseX >= b.x && mouseX <= b.x + b.w && mouseY >= b.y && mouseY <= b.y + b.h) {
+          openCenterScreen(b.type);
+          break;
+        }
+      }
+
+      const worldX = (mouseX - window.innerWidth / 2) / camera.zoom + camera.pos.x;
+      const worldY = (mouseY - window.innerHeight / 2) / camera.zoom + camera.pos.y;
+
+      let hitPlanet = false;
+
+      for (const p of planets) {
+        if (p.name === '太阳') continue;
+        const screenPos = camera.worldToScreen(p.pos);
+        const screenRadius = p.radius * camera.zoom;
+        const dx = mouseX - screenPos.x;
+        const dy = mouseY - screenPos.y;
+        if (dx * dx + dy * dy <= screenRadius * screenRadius) {
+          if (rocket.planet === p) {
+            camera.followTarget = null;
+          } else {
+            camera.followTarget = p;
+          }
+          hitPlanet = true;
+          break;
+        }
+      }
+
+      if (!hitPlanet) {
+        if (planetNamePositions.length === 0) {
+          for (const p of planets) {
+            if (p.name === '太阳') continue;
+            const screenPos = camera.worldToScreen(p.pos);
+            const r = p.radius * camera.zoom;
+            const nameY = screenPos.y + Math.max(r, 2) + 8;
+            const nameHeight = 24;
+            const nameWidth = 60;
+            if (mouseX >= screenPos.x - nameWidth / 2 && mouseX <= screenPos.x + nameWidth / 2 &&
+                mouseY >= nameY && mouseY <= nameY + nameHeight) {
+              camera.followTarget = p;
+              hitPlanet = true;
+              break;
+            }
+          }
+        } else {
+          for (const np of planetNamePositions) {
+            if (np.name === '太阳') continue;
+            const padding = 4;
+            if (mouseX >= np.x - np.width / 2 - padding && mouseX <= np.x + np.width / 2 + padding &&
+                mouseY >= np.y - padding && mouseY <= np.y + np.height + padding) {
+              const p = planets.find(pp => pp.name === np.name);
+              if (p) {
+                camera.followTarget = p;
+                hitPlanet = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      if (!hitPlanet) {
+        const rocketScreenPos = camera.worldToScreen(rocket.pos);
+        const rocketRadius = ROCKET_HALF_HEIGHT * camera.zoom;
+        const dxR = mouseX - rocketScreenPos.x;
+        const dyR = mouseY - rocketScreenPos.y;
+        if (dxR * dxR + dyR * dyR <= rocketRadius * rocketRadius) {
+          camera.followTarget = null;
+        }
+      }
+
+      const attitudeSize = 140;
+      const attitudeMargin = 16;
+      const attitudeX = window.innerWidth - attitudeSize - attitudeMargin;
+      const attitudeY = attitudeMargin;
+      if (mouseX >= attitudeX && mouseX <= attitudeX + attitudeSize &&
+          mouseY >= attitudeY && mouseY <= attitudeY + attitudeSize) {
+        camera.followTarget = null;
+      }
+    });
+
+    const bgMusic = document.getElementById('bg-music');
+    if (bgMusic) bgMusic.volume = 0.1;
+    const musicBtn = document.getElementById('music-btn');
+    const musicPanel = document.getElementById('music-panel');
+    const musicToggle = document.getElementById('music-toggle');
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeValue = document.getElementById('volume-value');
+
+    if (musicBtn) {
+      musicBtn.addEventListener('click', () => {
+        musicPanel.style.display = musicPanel.style.display === 'block' ? 'none' : 'block';
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!musicBtn.contains(e.target) && !musicPanel.contains(e.target)) {
+          musicPanel.style.display = 'none';
+        }
+      });
+    }
+
+    if (musicToggle) {
+      musicToggle.addEventListener('click', () => {
+        if (bgMusic && bgMusic.paused) {
+          bgMusic.play().then(() => {
+            musicToggle.textContent = '暂停';
+          }).catch(() => {
+            showMessage('请先将 music.mp3 文件放到项目目录');
+          });
+        } else if (bgMusic) {
+          bgMusic.pause();
+          musicToggle.textContent = '播放';
+        }
+      });
+    }
+
+    if (volumeSlider && bgMusic) {
+      volumeSlider.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        bgMusic.volume = val;
+        if (volumeValue) volumeValue.textContent = Math.round(val * 100) + '%';
+      });
+    }
+
+    const voiceToggle = document.getElementById('voice-toggle');
+    if (voiceToggle) {
+      voiceToggle.addEventListener('click', () => {
+        gameState.voiceEnabled = !gameState.voiceEnabled;
+        voiceToggle.textContent = gameState.voiceEnabled ? '🔊 语音开启' : '🔇 语音关闭';
+        if (!gameState.voiceEnabled && window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+        }
+      });
+    }
+
+    const athenaVoiceSelect = document.getElementById('athena-voice-select');
+    let retryCount = 0;
+    
+    function populateVoiceSelect() {
+      if (!athenaVoiceSelect) return;
+      
+      athenaVoiceSelect.innerHTML = '<option value="">自动选择</option>';
+      
+      const zhVoices = cachedVoices.filter(v => v.lang.startsWith('zh'));
+      
+      if (zhVoices.length === 0 && retryCount < 5) {
+        retryCount++;
+        console.log(`[Voice] No voices found, retrying... (${retryCount}/5)`);
+        setTimeout(() => {
+          loadVoices();
+          populateVoiceSelect();
+        }, 500);
+        return;
+      }
+      
+      zhVoices.forEach(voice => {
+        const option = document.createElement('option');
+        option.value = voice.name;
+        option.textContent = voice.name;
+        athenaVoiceSelect.appendChild(option);
+      });
+      
+      if (gameState.athenaVoice) {
+        athenaVoiceSelect.value = gameState.athenaVoice;
+      }
+      
+      console.log(`[Voice] Populated ${zhVoices.length} Chinese voices`);
+    }
+    
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        loadVoices();
+        populateVoiceSelect();
+      };
+      populateVoiceSelect();
+    }
+    
+    if (athenaVoiceSelect) {
+      athenaVoiceSelect.addEventListener('change', (e) => {
+        gameState.athenaVoice = e.target.value;
+        console.log('Athena voice changed to:', gameState.athenaVoice || 'auto');
+      });
+    }
+    
+    const voicePreviewBtn = document.getElementById('voice-preview-btn');
+    if (voicePreviewBtn) {
+      voicePreviewBtn.addEventListener('click', () => {
+        speakDialogue('指挥官，这是我的新音色。感觉如何？', 'athena');
+      });
+    }
+
+    const startBtn = document.getElementById('start-btn');
+    if (startBtn) {
+      startBtn.addEventListener('click', () => {
+        if (bgMusic) bgMusic.play().catch(() => {});
+        if (musicToggle) musicToggle.textContent = '暂停';
+        openRocketBuilder();
+      });
+    }
+    
+    const antiGravityBtn = document.getElementById('antigravity-btn');
+    if (antiGravityBtn) {
+      antiGravityBtn.addEventListener('click', () => {
+        rocket.antiGravity = !rocket.antiGravity;
+        if (rocket.antiGravity) {
+          antiGravityBtn.classList.add('active');
+          antiGravityBtn.textContent = '反重力模式 ON';
+        } else {
+          antiGravityBtn.classList.remove('active');
+          antiGravityBtn.textContent = '反重力模式 OFF';
+        }
+      });
+    }
+
+    const warpBtn = document.getElementById('warp-btn');
+    if (warpBtn) {
+      let warpState = 0; 
+      warpBtn.addEventListener('click', () => {
+        rocket.warpMode = false;
+        rocket.warpProMode = false;
+        warpBtn.classList.remove('active');
+        
+        warpState = (warpState + 1) % 3;
+        
+        if (warpState === 1) {
+          rocket.warpMode = true;
+          warpBtn.classList.add('active');
+          warpBtn.textContent = '曲率模式 ON';
+          warpBtn.style.background = 'rgba(150, 0, 255, 0.4)';
+          warpBtn.style.borderColor = 'rgba(200, 0, 255, 0.8)';
+        } else if (warpState === 2) {
+          rocket.warpProMode = true;
+          warpBtn.classList.add('active');
+          warpBtn.textContent = '曲率模式Pro ON';
+          warpBtn.style.background = 'rgba(255, 200, 0, 0.4)';
+          warpBtn.style.borderColor = 'rgba(255, 220, 0, 0.8)';
+        } else {
+          warpBtn.textContent = '曲率模式 OFF';
+          warpBtn.style.background = '';
+          warpBtn.style.borderColor = '';
+        }
+      });
+    }
+
+    const athenaBtn = document.getElementById('athena-btn');
+    const athenaNavLabel = document.getElementById('athena-nav-label');
+    const planetList = ['水星', '金星', '火星', '木星', '土星', '天王星', '海王星', '冥王星'];
+    
+    function updateNavLabel() {
+      if (athenaNavLabel) {
+        athenaNavLabel.textContent = `导航至 ${gameState.targetPlanet}`;
+      }
+    }
+    
+    updateNavLabel();
+    
+    if (athenaBtn) {
+      let clickCount = 0;
+      let clickTimeout = null;
+      
+      athenaBtn.addEventListener('click', () => {
+        clickCount++;
+        if (clickTimeout) clearTimeout(clickTimeout);
+        
+        if (clickCount === 1) {
+          clickTimeout = setTimeout(() => {
+            const panel = document.getElementById('athena-panel');
+            panel.classList.toggle('active');
+            if (panel.classList.contains('active')) {
+              athenaBtn.classList.add('hidden');
+              if (!gameState.currentDialogue) {
+                showAthenaDialogue('default');
+              }
+            } else {
+              athenaBtn.classList.remove('hidden');
+            }
+            clickCount = 0;
+          }, 300);
+        } else {
+          clearTimeout(clickTimeout);
+          const currentIndex = planetList.indexOf(gameState.targetPlanet);
+          const nextIndex = (currentIndex + 1) % planetList.length;
+          gameState.targetPlanet = planetList[nextIndex];
+          updateNavLabel();
+          speakDialogue(`航线已更新，目标：${gameState.targetPlanet}。正在重新规划最优路径。`, 'athena');
+          clickCount = 0;
+        }
+      });
+    }
+
+    const storyLogBtn = document.getElementById('story-log-btn');
+    if (storyLogBtn) {
+      storyLogBtn.addEventListener('click', () => {
+        const log = document.getElementById('story-log');
+        log.classList.toggle('active');
+      });
+    }
+    console.log('✅ 所有事件绑定成功');
+  </script>
+</body>
+</html>
