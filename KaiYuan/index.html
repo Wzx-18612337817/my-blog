@@ -704,6 +704,20 @@
     justify-content: center;
     font-size: 18px;
     box-shadow: 0 0 15px rgba(100, 200, 255, 0.5);
+    transition: transform 0.3s ease;
+  }
+  .athena-icon.breathing {
+    animation: breathe 2s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 15px rgba(100, 200, 255, 0.5);
+    }
+    50% {
+      transform: scale(1.15);
+      box-shadow: 0 0 25px rgba(100, 200, 255, 0.8);
+    }
   }
   .athena-name {
     font-size: 14px;
@@ -802,7 +816,7 @@
   }
   .story-log {
     position: fixed;
-    top: 200px;
+    top: 240px;
     left: 16px;
     width: 280px;
     max-height: 300px;
@@ -843,7 +857,7 @@
   }
   #story-log-btn {
     position: fixed;
-    top: 140px;
+    top: 180px;
     left: 16px;
     width: 48px;
     height: 48px;
@@ -862,6 +876,58 @@
   #story-log-btn:hover {
     background: rgba(100, 200, 255, 0.3);
     border-color: rgba(100, 200, 255, 0.5);
+  }
+  .chapter-title {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.8s;
+    pointer-events: none;
+  }
+  .chapter-title.active {
+    display: flex;
+    opacity: 1;
+  }
+  .chapter-title .chapter-number {
+    font-size: 2rem;
+    color: rgba(100, 200, 255, 0.6);
+    letter-spacing: 0.5em;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    animation: fadeInUp 1s ease-out;
+  }
+  .chapter-title .chapter-name {
+    font-size: 4rem;
+    font-family: 'KaiTi', 'STKaiti', '楷体', serif;
+    color: #64b4ff;
+    text-shadow: 0 0 40px rgba(100, 200, 255, 0.6), 0 0 80px rgba(100, 200, 255, 0.3);
+    margin-bottom: 30px;
+    animation: fadeInUp 1s ease-out 0.3s both;
+  }
+  .chapter-title .chapter-subtitle {
+    font-size: 1.3rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    animation: fadeInUp 1s ease-out 0.6s both;
+  }
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   .ending-screen {
     position: fixed;
@@ -1100,6 +1166,12 @@
     <div id="story-log-content"></div>
   </div>
 
+  <div class="chapter-title" id="chapter-title">
+    <div class="chapter-number" id="chapter-number"></div>
+    <div class="chapter-name" id="chapter-name"></div>
+    <div class="chapter-subtitle" id="chapter-subtitle"></div>
+  </div>
+
   <div class="ending-screen" id="ending-screen">
     <h2 id="ending-title">结局</h2>
     <div class="ending-type" id="ending-type"></div>
@@ -1238,7 +1310,7 @@
     let MAX_FUEL = 200;
     let FUEL_BURN = 0.003;
     let THRUST_FORCE = 0.0132;
-    const ROCKET_VISUAL_SCALE = 1; // 视觉放大倍数：当前为真实比例，火箭默认视图下几乎不可见
+    const ROCKET_VISUAL_SCALE = 1.5; // 视觉放大倍数：当前为真实比例，火箭默认视图下几乎不可见
     const ROCKET_HALF_HEIGHT = ROCKET_HEIGHT * ROCKET_VISUAL_SCALE / 2; // 碰撞与停靠用的视觉半高
     const ROCKET_HALF_WIDTH = ROCKET_WIDTH * ROCKET_VISUAL_SCALE / 2; // 视觉半宽
     const ROTATION_SPEED = 0.006;
@@ -2002,26 +2074,87 @@
         if (rocketTexture && rocketTexture.complete) {
           ctx.drawImage(rocketTexture, -halfW, -halfH, halfW * 2, halfH * 2);
         } else {
-          const bodyGrad = ctx.createLinearGradient(-halfW * 0.35, 0, halfW * 0.35, 0);
-          bodyGrad.addColorStop(0, '#4a5568');
-          bodyGrad.addColorStop(0.3, '#718096');
-          bodyGrad.addColorStop(0.5, '#a0aec0');
-          bodyGrad.addColorStop(0.7, '#718096');
-          bodyGrad.addColorStop(1, '#4a5568');
-          ctx.fillStyle = bodyGrad;
+          const bodyLength = halfH * 1.1;
+          const bodyWidth = halfW * 0.5;
+
+          ctx.fillStyle = '#4a5568';
           ctx.beginPath();
-          ctx.ellipse(0, 0, halfW * 0.35, halfH * 0.55, 0, 0, PI * 2);
+          ctx.moveTo(0, -bodyLength);
+          ctx.bezierCurveTo(bodyWidth * 0.8, -bodyLength * 0.7, bodyWidth, -bodyLength * 0.2, bodyWidth * 0.6, bodyLength * 0.5);
+          ctx.lineTo(bodyWidth * 0.4, bodyLength * 0.7);
+          ctx.lineTo(-bodyWidth * 0.4, bodyLength * 0.7);
+          ctx.lineTo(-bodyWidth * 0.6, bodyLength * 0.5);
+          ctx.bezierCurveTo(-bodyWidth, -bodyLength * 0.2, -bodyWidth * 0.8, -bodyLength * 0.7, 0, -bodyLength);
+          ctx.closePath();
           ctx.fill();
 
-          ctx.strokeStyle = '#00bfff';
-          ctx.lineWidth = 2;
+          ctx.fillStyle = '#2d3748';
           ctx.beginPath();
-          ctx.arc(0, -halfH * 0.3, halfW * 0.8, 0, PI * 2);
+          ctx.moveTo(bodyWidth * 0.4, bodyLength * 0.4);
+          ctx.lineTo(bodyWidth * 0.3, bodyLength * 0.6);
+          ctx.lineTo(-bodyWidth * 0.3, bodyLength * 0.6);
+          ctx.lineTo(-bodyWidth * 0.4, bodyLength * 0.4);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = '#64b4ff';
+          ctx.beginPath();
+          ctx.moveTo(0, -bodyLength * 0.85);
+          ctx.bezierCurveTo(bodyWidth * 0.2, -bodyLength * 0.75, bodyWidth * 0.18, -bodyLength * 0.45, 0, -bodyLength * 0.5);
+          ctx.bezierCurveTo(-bodyWidth * 0.18, -bodyLength * 0.45, -bodyWidth * 0.2, -bodyLength * 0.75, 0, -bodyLength * 0.85);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.strokeStyle = '#87ceeb';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(0, -bodyLength * 0.55, bodyWidth * 0.12, 0, PI * 2);
           ctx.stroke();
 
-          ctx.strokeStyle = '#9400d3';
+          ctx.fillStyle = '#4a5568';
           ctx.beginPath();
-          ctx.arc(0, halfH * 0.3, halfW * 0.8, 0, PI * 2);
+          ctx.moveTo(-bodyWidth * 0.4, bodyLength * 0.1);
+          ctx.lineTo(-bodyWidth * 1.5, bodyLength * 0.4);
+          ctx.lineTo(-bodyWidth * 1.2, bodyLength * 0.6);
+          ctx.lineTo(-bodyWidth * 0.3, bodyLength * 0.3);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.moveTo(bodyWidth * 0.4, bodyLength * 0.1);
+          ctx.lineTo(bodyWidth * 1.5, bodyLength * 0.4);
+          ctx.lineTo(bodyWidth * 1.2, bodyLength * 0.6);
+          ctx.lineTo(bodyWidth * 0.3, bodyLength * 0.3);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = '#3399ff';
+          ctx.globalAlpha = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(-bodyWidth * 0.6, bodyLength * 0.15);
+          ctx.lineTo(-bodyWidth * 1.4, bodyLength * 0.2);
+          ctx.lineTo(-bodyWidth * 1.4, bodyLength * 0.5);
+          ctx.lineTo(-bodyWidth * 0.6, bodyLength * 0.45);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.moveTo(bodyWidth * 0.6, bodyLength * 0.15);
+          ctx.lineTo(bodyWidth * 1.4, bodyLength * 0.2);
+          ctx.lineTo(bodyWidth * 1.4, bodyLength * 0.5);
+          ctx.lineTo(bodyWidth * 0.6, bodyLength * 0.45);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.globalAlpha = 1;
+
+          ctx.strokeStyle = '#00bfff';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(-bodyWidth * 0.5, -bodyLength * 0.1);
+          ctx.lineTo(bodyWidth * 0.5, -bodyLength * 0.1);
+          ctx.moveTo(-bodyWidth * 0.5, bodyLength * 0.1);
+          ctx.lineTo(bodyWidth * 0.5, bodyLength * 0.1);
           ctx.stroke();
         }
 
@@ -2393,6 +2526,8 @@
       endingChoice: null,
       unlockedEndings: [],
       kuiperEntered: false,
+      chapter2Shown: false,
+      chapter3Shown: false,
       voiceEnabled: true,
       athenaVoice: '',
       autoPilot: false,
@@ -3404,12 +3539,14 @@
       const panel = document.getElementById('athena-panel');
       const message = document.getElementById('athena-message');
       const choices = document.getElementById('athena-choices');
+      const icon = document.querySelector('.athena-icon');
 
       console.log('[Dialogue] Panel element:', panel);
       console.log('[Dialogue] Message element:', message);
       console.log('[Dialogue] Choices element:', choices);
 
       panel.classList.add('active');
+      if (icon) icon.classList.add('breathing');
       console.log('[Dialogue] Panel classList after adding active:', panel.classList);
       document.getElementById('athena-btn').classList.add('hidden');
 
@@ -3521,20 +3658,16 @@
     function handleDialogueEnd(dialogue) {
       if (dialogue.id === 'intro_end') {
         gameState.storyState = STORY_STATE.CHAPTER1;
-      } else if (dialogue.id === 'mars_relic') {
-        gameState.storyState = STORY_STATE.CHAPTER2;
-      } else if (dialogue.id === 'jupiter_relic') {
-        gameState.storyState = STORY_STATE.CHAPTER3;
       } else if (dialogue.id === 'saturn_hidden') {
         gameState.creatorMessageUnlocked = true;
-      } else if (dialogue.id === 'kuiper_final') {
-        gameState.storyState = STORY_STATE.FINAL;
       }
     }
 
     function closeAthenaPanel() {
       document.getElementById('athena-panel').classList.remove('active');
       document.getElementById('athena-btn').classList.remove('hidden');
+      const icon = document.querySelector('.athena-icon');
+      if (icon) icon.classList.remove('breathing');
       gameState.currentDialogue = null;
     }
 
@@ -3635,7 +3768,12 @@
 
           if (p.name === '水星') {
             console.log('[Mission] Triggering mercury_land dialogue');
-            setTimeout(() => showAthenaDialogue('mercury_land'), 2000);
+            gameState.storyState = STORY_STATE.CHAPTER1;
+            setTimeout(() => {
+              showChapterTitle('CHAPTER 1', '内太阳系', '水星·金星·火星', () => {
+                showAthenaDialogue('mercury_land');
+              });
+            }, 2000);
           } else if (p.name === '金星') {
             setTimeout(() => showAthenaDialogue('venus_land'), 2000);
           } else if (p.name === '火星') {
@@ -3654,19 +3792,43 @@
         }
       }
 
-      const asteroidDist = rocket.pos.dist(new Vec2(400000000, 0));
-      if (asteroidDist < 200000000 && gameState.storyState === STORY_STATE.CHAPTER1) {
+      if (gameState.storyState === STORY_STATE.CHAPTER1 && 
+          gameState.visitedPlanets.includes('火星') && 
+          !gameState.chapter2Shown) {
         gameState.storyState = STORY_STATE.CHAPTER2;
+        gameState.chapter2Shown = true;
         addStoryLog('💫 进入小行星带，神秘信号持续增强...', true, 'warning');
-        setTimeout(() => showAthenaDialogue('asteroid_belt'), 2000);
+        setTimeout(() => {
+          showChapterTitle('CHAPTER 2', '小行星带', '远古飞船残骸', () => {
+            showAthenaDialogue('asteroid_belt');
+          });
+        }, 2000);
       }
 
-      const kuiperDist = rocket.pos.dist(new Vec2(5000000000, 0));
-      if (kuiperDist < 1000000000 && gameState.storyState === STORY_STATE.CHAPTER3 && !gameState.kuiperEntered) {
+      if (gameState.storyState === STORY_STATE.CHAPTER2 && 
+          gameState.visitedPlanets.includes('土星') && 
+          !gameState.chapter3Shown) {
+        gameState.storyState = STORY_STATE.CHAPTER3;
+        gameState.chapter3Shown = true;
+        addStoryLog('🪐 探索气态巨星，揭开宇宙深处的秘密...', true, 'warning');
+        setTimeout(() => {
+          showChapterTitle('CHAPTER 3', '气态巨星', '木星与土星的秘密', () => {
+            showAthenaDialogue('jupiter_land');
+          });
+        }, 2000);
+      }
+
+      if (gameState.storyState === STORY_STATE.CHAPTER3 && 
+          gameState.visitedPlanets.includes('冥王星') && 
+          !gameState.kuiperEntered) {
         gameState.storyState = STORY_STATE.FINAL;
         gameState.kuiperEntered = true;
         addStoryLog('🌌 进入柯伊伯带，神秘信号强度达到峰值！', true, 'warning');
-        setTimeout(() => showAthenaDialogue('kuiper_belt'), 2000);
+        setTimeout(() => {
+          showChapterTitle('FINAL CHAPTER', '柯伊伯带', '第12号站', () => {
+            showAthenaDialogue('kuiper_belt');
+          });
+        }, 2000);
       }
     }
 
@@ -3679,161 +3841,96 @@
       const ctx = canvas.getContext('2d');
       const cx = size / 2;
       const cy = size / 2;
-      const ringRadius = size * 0.35;
-      const ringWidth = size * 0.08;
+      const bodyLength = size * 0.45;
+      const bodyWidth = size * 0.15;
 
       ctx.save();
       ctx.translate(cx, cy);
 
-      // 后圆环 - 白色主体
-      const ringBackGrad = ctx.createLinearGradient(-ringRadius - ringWidth, -ringRadius, ringRadius + ringWidth, -ringRadius);
-      ringBackGrad.addColorStop(0, '#d0d0d0');
-      ringBackGrad.addColorStop(0.3, '#f5f5f5');
-      ringBackGrad.addColorStop(0.5, '#ffffff');
-      ringBackGrad.addColorStop(0.7, '#f5f5f5');
-      ringBackGrad.addColorStop(1, '#d0d0d0');
-      ctx.fillStyle = ringBackGrad;
-      
+      ctx.fillStyle = '#4a5568';
       ctx.beginPath();
-      ctx.arc(0, -ringRadius * 0.4, ringRadius, -PI * 0.45, PI * 0.45);
-      ctx.arc(0, -ringRadius * 0.4, ringRadius - ringWidth, PI * 0.45, -PI * 0.45, true);
+      ctx.moveTo(0, -bodyLength);
+      ctx.bezierCurveTo(bodyWidth * 1.8, -bodyLength * 0.7, bodyWidth * 2, -bodyLength * 0.2, bodyWidth * 1.4, bodyLength * 0.5);
+      ctx.lineTo(bodyWidth * 1, bodyLength * 0.7);
+      ctx.lineTo(-bodyWidth * 1, bodyLength * 0.7);
+      ctx.lineTo(-bodyWidth * 1.4, bodyLength * 0.5);
+      ctx.bezierCurveTo(-bodyWidth * 2, -bodyLength * 0.2, -bodyWidth * 1.8, -bodyLength * 0.7, 0, -bodyLength);
       ctx.closePath();
       ctx.fill();
 
-      // 后圆环红色边缘
-      ctx.fillStyle = '#c41e3a';
+      ctx.fillStyle = '#2d3748';
       ctx.beginPath();
-      ctx.arc(0, -ringRadius * 0.4, ringRadius, -PI * 0.45, PI * 0.45);
-      ctx.lineTo(Math.cos(PI * 0.45) * (ringRadius - size * 0.01), -ringRadius * 0.4 + Math.sin(PI * 0.45) * (ringRadius - size * 0.01));
-      ctx.arc(0, -ringRadius * 0.4, ringRadius - size * 0.01, PI * 0.45, -PI * 0.45, true);
+      ctx.moveTo(bodyWidth * 1, bodyLength * 0.4);
+      ctx.lineTo(bodyWidth * 0.7, bodyLength * 0.6);
+      ctx.lineTo(-bodyWidth * 0.7, bodyLength * 0.6);
+      ctx.lineTo(-bodyWidth * 1, bodyLength * 0.4);
       ctx.closePath();
       ctx.fill();
 
-      // 后圆环内部蓝色灯光
-      ctx.fillStyle = '#00bfff';
-      for (let i = -4; i <= 4; i++) {
-        const angle = i * PI / 12;
-        const x = Math.cos(angle) * (ringRadius - ringWidth * 0.5);
-        const y = -ringRadius * 0.4 + Math.sin(angle) * (ringRadius - ringWidth * 0.5);
-        ctx.beginPath();
-        ctx.ellipse(x, y, size * 0.02, size * 0.008, 0, 0, PI * 2);
-        ctx.fill();
-      }
-
-      // 前圆环 - 白色主体
-      const ringFrontGrad = ctx.createLinearGradient(-ringRadius - ringWidth, ringRadius, ringRadius + ringWidth, ringRadius);
-      ringFrontGrad.addColorStop(0, '#d0d0d0');
-      ringFrontGrad.addColorStop(0.3, '#f5f5f5');
-      ringFrontGrad.addColorStop(0.5, '#ffffff');
-      ringFrontGrad.addColorStop(0.7, '#f5f5f5');
-      ringFrontGrad.addColorStop(1, '#d0d0d0');
-      ctx.fillStyle = ringFrontGrad;
-      
+      const cockpitGrad = ctx.createLinearGradient(-bodyWidth * 0.4, -bodyLength * 0.7, bodyWidth * 0.4, -bodyLength * 0.4);
+      cockpitGrad.addColorStop(0, 'rgba(100, 150, 255, 0.9)');
+      cockpitGrad.addColorStop(0.5, 'rgba(150, 200, 255, 1)');
+      cockpitGrad.addColorStop(1, 'rgba(100, 150, 255, 0.9)');
+      ctx.fillStyle = cockpitGrad;
       ctx.beginPath();
-      ctx.arc(0, ringRadius * 0.4, ringRadius, PI * 0.55, PI * 2.45);
-      ctx.arc(0, ringRadius * 0.4, ringRadius - ringWidth, PI * 2.45, PI * 0.55, true);
+      ctx.moveTo(0, -bodyLength * 0.85);
+      ctx.bezierCurveTo(bodyWidth * 0.5, -bodyLength * 0.75, bodyWidth * 0.45, -bodyLength * 0.45, 0, -bodyLength * 0.5);
+      ctx.bezierCurveTo(-bodyWidth * 0.45, -bodyLength * 0.45, -bodyWidth * 0.5, -bodyLength * 0.75, 0, -bodyLength * 0.85);
       ctx.closePath();
       ctx.fill();
 
-      // 前圆环红色边缘
-      ctx.fillStyle = '#c41e3a';
+      ctx.strokeStyle = 'rgba(100, 200, 255, 0.6)';
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(0, ringRadius * 0.4, ringRadius, PI * 0.55, PI * 2.45);
-      ctx.lineTo(Math.cos(PI * 2.45) * (ringRadius - size * 0.01), ringRadius * 0.4 + Math.sin(PI * 2.45) * (ringRadius - size * 0.01));
-      ctx.arc(0, ringRadius * 0.4, ringRadius - size * 0.01, PI * 2.45, PI * 0.55, true);
-      ctx.closePath();
-      ctx.fill();
-
-      // 前圆环内部蓝色灯光
-      ctx.fillStyle = '#00bfff';
-      for (let i = -4; i <= 4; i++) {
-        const angle = PI + i * PI / 12;
-        const x = Math.cos(angle) * (ringRadius - ringWidth * 0.5);
-        const y = ringRadius * 0.4 + Math.sin(angle) * (ringRadius - ringWidth * 0.5);
-        ctx.beginPath();
-        ctx.ellipse(x, y, size * 0.02, size * 0.008, 0, 0, PI * 2);
-        ctx.fill();
-      }
-
-      // 连接支柱
-      ctx.fillStyle = '#e0e0e0';
-      ctx.fillRect(-size * 0.02, -ringRadius * 0.4 - ringWidth * 0.5, size * 0.04, ringRadius * 0.8 + ringWidth);
-      ctx.fillRect(-size * 0.25, -ringRadius * 0.4 - ringWidth * 0.5, size * 0.03, ringRadius * 0.8 + ringWidth);
-      ctx.fillRect(size * 0.22, -ringRadius * 0.4 - ringWidth * 0.5, size * 0.03, ringRadius * 0.8 + ringWidth);
-
-      // 主体船身 - 银色渐变
-      const bodyGrad = ctx.createLinearGradient(-size * 0.3, 0, size * 0.3, 0);
-      bodyGrad.addColorStop(0, '#a8a8a8');
-      bodyGrad.addColorStop(0.3, '#d8d8d8');
-      bodyGrad.addColorStop(0.5, '#f0f0f0');
-      bodyGrad.addColorStop(0.7, '#d8d8d8');
-      bodyGrad.addColorStop(1, '#a8a8a8');
-      ctx.fillStyle = bodyGrad;
-      
-      ctx.beginPath();
-      ctx.moveTo(-size * 0.3, -size * 0.45);
-      ctx.lineTo(-size * 0.15, -size * 0.5);
-      ctx.lineTo(size * 0.15, -size * 0.5);
-      ctx.lineTo(size * 0.3, -size * 0.45);
-      ctx.lineTo(size * 0.35, size * 0.45);
-      ctx.lineTo(size * 0.15, size * 0.5);
-      ctx.lineTo(-size * 0.15, size * 0.5);
-      ctx.lineTo(-size * 0.35, size * 0.45);
-      ctx.closePath();
-      ctx.fill();
-
-      // 船身蓝色窗户
-      ctx.fillStyle = '#4a90d9';
-      const windowRowCount = 4;
-      const windowColCount = 6;
-      const windowW = size * 0.04;
-      const windowH = size * 0.025;
-      const windowSpacingX = size * 0.08;
-      const windowSpacingY = size * 0.15;
-      
-      for (let row = 0; row < windowRowCount; row++) {
-        for (let col = 0; col < windowColCount; col++) {
-          const x = -size * 0.2 + col * windowSpacingX;
-          const y = -size * 0.2 + row * windowSpacingY;
-          ctx.beginPath();
-          ctx.roundRect(x, y, windowW, windowH, size * 0.01);
-          ctx.fill();
-        }
-      }
-
-      // 船身细节线条
-      ctx.strokeStyle = '#c0c0c0';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(-size * 0.32, -size * 0.2);
-      ctx.lineTo(size * 0.32, -size * 0.2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(-size * 0.32, size * 0.2);
-      ctx.lineTo(size * 0.32, size * 0.2);
+      ctx.arc(0, -bodyLength * 0.55, bodyWidth * 0.3, 0, PI * 2);
       ctx.stroke();
 
-      // 船头
-      const noseGrad = ctx.createLinearGradient(0, -size * 0.5, 0, -size * 0.35);
-      noseGrad.addColorStop(0, '#ffffff');
-      noseGrad.addColorStop(1, '#e0e0e0');
-      ctx.fillStyle = noseGrad;
+      ctx.fillStyle = '#4a5568';
       ctx.beginPath();
-      ctx.moveTo(0, -size * 0.55);
-      ctx.lineTo(-size * 0.12, -size * 0.4);
-      ctx.lineTo(size * 0.12, -size * 0.4);
+      ctx.moveTo(-bodyWidth * 0.9, bodyLength * 0.1);
+      ctx.lineTo(-bodyWidth * 3.5, bodyLength * 0.4);
+      ctx.lineTo(-bodyWidth * 2.8, bodyLength * 0.6);
+      ctx.lineTo(-bodyWidth * 0.7, bodyLength * 0.3);
       ctx.closePath();
       ctx.fill();
 
-      // 船尾引擎
-      ctx.fillStyle = '#333';
       ctx.beginPath();
-      ctx.moveTo(-size * 0.2, size * 0.45);
-      ctx.lineTo(-size * 0.15, size * 0.5);
-      ctx.lineTo(size * 0.15, size * 0.5);
-      ctx.lineTo(size * 0.2, size * 0.45);
+      ctx.moveTo(bodyWidth * 0.9, bodyLength * 0.1);
+      ctx.lineTo(bodyWidth * 3.5, bodyLength * 0.4);
+      ctx.lineTo(bodyWidth * 2.8, bodyLength * 0.6);
+      ctx.lineTo(bodyWidth * 0.7, bodyLength * 0.3);
       ctx.closePath();
       ctx.fill();
+
+      const solarGrad = ctx.createLinearGradient(-bodyWidth * 3.2, bodyLength * 0.2, -bodyWidth * 3.2, bodyLength * 0.5);
+      solarGrad.addColorStop(0, 'rgba(0, 150, 255, 0.7)');
+      solarGrad.addColorStop(0.5, 'rgba(50, 200, 255, 0.5)');
+      solarGrad.addColorStop(1, 'rgba(0, 150, 255, 0.7)');
+      ctx.fillStyle = solarGrad;
+      ctx.beginPath();
+      ctx.moveTo(-bodyWidth * 1.4, bodyLength * 0.15);
+      ctx.lineTo(-bodyWidth * 3.2, bodyLength * 0.2);
+      ctx.lineTo(-bodyWidth * 3.2, bodyLength * 0.5);
+      ctx.lineTo(-bodyWidth * 1.4, bodyLength * 0.45);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(bodyWidth * 1.4, bodyLength * 0.15);
+      ctx.lineTo(bodyWidth * 3.2, bodyLength * 0.2);
+      ctx.lineTo(bodyWidth * 3.2, bodyLength * 0.5);
+      ctx.lineTo(bodyWidth * 1.4, bodyLength * 0.45);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = '#00bfff';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-bodyWidth * 1.2, -bodyLength * 0.1);
+      ctx.lineTo(bodyWidth * 1.2, -bodyLength * 0.1);
+      ctx.moveTo(-bodyWidth * 1.2, bodyLength * 0.1);
+      ctx.lineTo(bodyWidth * 1.2, bodyLength * 0.1);
+      ctx.stroke();
 
       ctx.restore();
 
@@ -3856,6 +3953,26 @@
       elMessage.style.opacity = '1';
       if (messageTimer) clearTimeout(messageTimer);
       messageTimer = setTimeout(() => { elMessage.style.opacity = '0'; }, 2500);
+    }
+
+    function showChapterTitle(number, name, subtitle, callback) {
+      const chapterTitle = document.getElementById('chapter-title');
+      const chapterNumber = document.getElementById('chapter-number');
+      const chapterName = document.getElementById('chapter-name');
+      const chapterSubtitle = document.getElementById('chapter-subtitle');
+
+      chapterNumber.textContent = number;
+      chapterName.textContent = name;
+      chapterSubtitle.textContent = subtitle;
+
+      chapterTitle.classList.add('active');
+
+      setTimeout(() => {
+        chapterTitle.classList.remove('active');
+        setTimeout(() => {
+          if (callback) callback();
+        }, 800);
+      }, 3500);
     }
 
     function updateHUD() {
